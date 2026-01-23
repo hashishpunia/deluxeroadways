@@ -1,0 +1,8 @@
+{
+  "name": "Deluxe Roadways - Professional Logistics Solutions",
+  "description": "Official website for Deluxe Roadways, a premier logistics and transportation service provider based in Faridabad, India, offering Pan-India delivery solutions since 2017.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
