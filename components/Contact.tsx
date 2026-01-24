@@ -1,9 +1,13 @@
 
 import React, { useState } from 'react';
-import { GST_NO, FULL_ADDRESS, CONTACT_PHONE, CONTACT_EMAIL } from '../constants.tsx';
 import { MapPin, Phone, Globe, Send, CheckCircle, Mail } from 'lucide-react';
+import { CompanyDetails } from '../types.ts';
 
-const Contact: React.FC = () => {
+interface ContactProps {
+  details: CompanyDetails;
+}
+
+const Contact: React.FC<ContactProps> = ({ details }) => {
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -37,7 +41,7 @@ const Contact: React.FC = () => {
         <div className="lg:col-span-2">
           <h2 className="text-sm font-bold uppercase tracking-widest text-amber-600 mb-6">Contact Us</h2>
           <h3 className="text-4xl font-extrabold text-slate-900 mb-10 tracking-tight">
-            Reliable Logistics <br />from Faridabad.
+            Reliable Logistics <br />from {details.location.split(',')[0]}.
           </h3>
           
           <div className="space-y-8">
@@ -47,7 +51,7 @@ const Contact: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Office Address</p>
-                <p className="font-semibold text-slate-900">{FULL_ADDRESS}</p>
+                <p className="font-semibold text-slate-900">{details.address}</p>
               </div>
             </div>
 
@@ -57,7 +61,7 @@ const Contact: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Contact Phone</p>
-                <a href={`tel:${CONTACT_PHONE}`} className="font-semibold text-slate-900 hover:text-amber-600 transition-colors">{CONTACT_PHONE}</a>
+                <a href={`tel:${details.phone}`} className="font-semibold text-slate-900 hover:text-amber-600 transition-colors">{details.phone}</a>
               </div>
             </div>
 
@@ -67,7 +71,7 @@ const Contact: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Email Inquiry</p>
-                <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-slate-900 hover:text-amber-600 transition-colors">{CONTACT_EMAIL}</a>
+                <a href={`mailto:${details.email}`} className="font-semibold text-slate-900 hover:text-amber-600 transition-colors">{details.email}</a>
               </div>
             </div>
 
@@ -77,7 +81,7 @@ const Contact: React.FC = () => {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Business GST</p>
-                <p className="font-semibold text-slate-900 uppercase">{GST_NO}</p>
+                <p className="font-semibold text-slate-900 uppercase">{details.gst}</p>
               </div>
             </div>
           </div>

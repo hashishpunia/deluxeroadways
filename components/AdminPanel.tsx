@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Inbox, LogOut, Trash2, CheckCircle2, Clock, Truck, Users, Plus, Edit, Image as ImageIcon, X, Save, Upload } from 'lucide-react';
-import { Service, Testimonial, SiteAssets } from '../types.ts';
+import { LayoutDashboard, Inbox, LogOut, Trash2, CheckCircle2, Clock, Truck, Users, Plus, Edit, Image as ImageIcon, X, Save, Upload, Settings } from 'lucide-react';
+import { Service, Testimonial, SiteAssets, CompanyDetails } from '../types.ts';
 
 interface Inquiry {
   id: number;
@@ -21,12 +21,24 @@ interface AdminPanelProps {
   setTestimonials: (t: Testimonial[]) => void;
   assets: SiteAssets;
   setAssets: (a: SiteAssets) => void;
+  companyDetails: CompanyDetails;
+  setCompanyDetails: (c: CompanyDetails) => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, services, setServices, testimonials, setTestimonials, assets, setAssets }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ 
+  onClose, 
+  services, 
+  setServices, 
+  testimonials, 
+  setTestimonials, 
+  assets, 
+  setAssets,
+  companyDetails,
+  setCompanyDetails
+}) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'inquiries' | 'services' | 'testimonials' | 'assets'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'inquiries' | 'services' | 'testimonials' | 'assets' | 'settings'>('dashboard');
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
 
@@ -94,6 +106,25 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, services, setServices,
     }
   };
 
+  const handleServiceImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && editingService) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingService({ ...editingService, image: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCompanyDetailChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setCompanyDetails({
+      ...companyDetails,
+      [name]: name === 'estd' ? parseInt(value) || 2017 : value
+    });
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 font-sans">
@@ -144,7 +175,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, services, setServices,
               { id: 'inquiries', icon: Inbox, label: 'Inquiries', count: inquiries.filter(i => i.status === 'new').length },
               { id: 'services', icon: Truck, label: 'Manage Services' },
               { id: 'testimonials', icon: Users, label: 'Testimonials' },
-              { id: 'assets', icon: ImageIcon, label: 'Site Assets' }
+              { id: 'assets', icon: ImageIcon, label: 'Site Assets' },
+              { id: 'settings', icon: Settings, label: 'Settings' }
             ].map((item) => (
               <button
                 key={item.id}
@@ -281,8 +313,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, services, setServices,
                        </div>
                      </div>
                      <div className="space-y-2">
-                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Image URL</label>
-                       <input value={editingService.image} onChange={e => setEditingService({...editingService, image: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" placeholder="https://..." />
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Service Image</label>
+                       <div className="flex items-center gap-4">
+                         {editingService.image && (
+                           <img src={editingService.image} className="w-20 h-20 object-cover rounded-xl border" />
+                         )}
+                         <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl h-20 hover:bg-slate-50 cursor-pointer transition-colors">
+                           <Upload size={18} className="text-slate-400 mb-1" />
+                           <span className="text-[10px] font-black text-slate-400 uppercase">Upload Image</span>
+                           <input type="file" accept="image/*" className="hidden" onChange={handleServiceImageUpload} />
+                         </label>
+                       </div>
                      </div>
                      <div className="space-y-2">
                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detailed Description</label>
@@ -311,15 +352,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, services, setServices,
                    <img src={assets[asset.key as keyof SiteAssets]} className="w-full h-full object-cover" alt="" />
                 </div>
                 <div className="space-y-6">
-                  <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Direct URL</label>
-                    <input 
-                      type="text" 
-                      value={assets[asset.key as keyof SiteAssets]} 
-                      onChange={e => setAssets({ ...assets, [asset.key as keyof SiteAssets]: e.target.value })}
-                      className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none text-sm"
-                    />
-                  </div>
                   <div className="relative">
                     <label className="flex items-center justify-center gap-3 w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl hover:border-amber-500 hover:bg-amber-50/30 transition-all cursor-pointer">
                       <Upload size={18} className="text-slate-400" />
@@ -330,6 +362,59 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, services, setServices,
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm animate-in fade-in max-w-4xl">
+            <h3 className="text-xl font-bold mb-8">Business Information Settings</h3>
+            <form className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Company Name</label>
+                  <input name="name" value={companyDetails.name} onChange={handleCompanyDetailChange} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Proprietor Name</label>
+                  <input name="ceo" value={companyDetails.ceo} onChange={handleCompanyDetailChange} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Phone</label>
+                  <input name="phone" value={companyDetails.phone} onChange={handleCompanyDetailChange} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact Email</label>
+                  <input name="email" value={companyDetails.email} onChange={handleCompanyDetailChange} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">GST Number</label>
+                  <input name="gst" value={companyDetails.gst} onChange={handleCompanyDetailChange} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Established Year</label>
+                  <input type="number" name="estd" value={companyDetails.estd} onChange={handleCompanyDetailChange} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location (City, State)</label>
+                <input name="location" value={companyDetails.location} onChange={handleCompanyDetailChange} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Office Address</label>
+                <textarea name="address" rows={3} value={companyDetails.address} onChange={handleCompanyDetailChange} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none resize-none" />
+              </div>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setCompanyDetails(companyDetails);
+                  localStorage.setItem('dr_company_details', JSON.stringify(companyDetails));
+                  alert('Business details updated successfully!');
+                }} 
+                className="btn-primary flex items-center gap-2"
+              >
+                <Save size={18} /> Update Business Details
+              </button>
+            </form>
           </div>
         )}
 

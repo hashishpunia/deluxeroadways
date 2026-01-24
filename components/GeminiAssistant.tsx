@@ -2,17 +2,36 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { MessageSquare, Send, X, Bot, Loader2 } from 'lucide-react';
-import { SYSTEM_INSTRUCTION } from '../constants.tsx';
-import { Message } from '../types.ts';
+import { Message, CompanyDetails } from '../types.ts';
 
-const GeminiAssistant: React.FC = () => {
+interface GeminiAssistantProps {
+  details: CompanyDetails;
+}
+
+const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ details }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: 'Namaste! I am the Deluxe Roadways Assistant. How can I help you with your logistics needs today?' }
+    { role: 'model', text: `Namaste! I am the ${details.name} Assistant. How can I help you with your logistics needs today?` }
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const dynamicSystemInstruction = `
+    You are the "${details.name} AI Assistant". 
+    Core Knowledge:
+    - Based in ${details.location}.
+    - Established ${details.estd} as a Proprietor firm.
+    - Proprietor: ${details.ceo}.
+    - Company Full Address: ${details.address}.
+    - Phone: ${details.phone}.
+    - Email: ${details.email}.
+    - Services: Mini Truck Logistics, Refrigerated Trucks, Heavy Truck Transportation, Garbage Truck Logistics, Tata Shaktee Service, and Box Truck Logistics.
+    - Operations: We specialize in roadways/trucking across India.
+    - Pickup: Primarily from ${details.location}/Haryana; Drop: Pan India.
+    - Tone: Professional, authoritative, and helpful.
+    - For all pricing/rate inquiries, direct the user to click the "Ask Price" button or fill out the inquiry form.
+  `;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -46,8 +65,7 @@ const GeminiAssistant: React.FC = () => {
           parts: [{ text: m.text }]
         })), { role: 'user', parts: [{ text: userMessage }] }],
         config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          maxOutputTokens: 500,
+          systemInstruction: dynamicSystemInstruction,
         }
       });
 
@@ -130,7 +148,7 @@ const GeminiAssistant: React.FC = () => {
                 {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
               </button>
             </div>
-            <p className="text-[10px] text-center text-slate-400 mt-3 font-bold uppercase tracking-widest">Deluxe Roadways AI</p>
+            <p className="text-[10px] text-center text-slate-400 mt-3 font-bold uppercase tracking-widest">{details.name} AI</p>
           </div>
         </div>
       ) : (

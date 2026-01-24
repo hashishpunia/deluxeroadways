@@ -1,13 +1,14 @@
 
 import React from 'react';
-import { CEO, ESTD_YEAR, LOCATION } from '../constants.tsx';
 import { ShieldCheck, Target, Award, Zap, Clock, TrendingUp } from 'lucide-react';
+import { CompanyDetails } from '../types.ts';
 
 interface AboutProps {
   image: string;
+  details: CompanyDetails;
 }
 
-const About: React.FC<AboutProps> = ({ image }) => {
+const About: React.FC<AboutProps> = ({ image, details }) => {
   const features = [
     { icon: Zap, title: "High Efficiency", text: "Optimized routes and smart scheduling for maximum output." },
     { icon: Clock, title: "Precision Timing", text: "Punctuality is the core pillar of our delivery promise." },
@@ -32,7 +33,7 @@ const About: React.FC<AboutProps> = ({ image }) => {
             <div className="absolute -bottom-6 md:-bottom-10 -right-4 md:-right-6 bg-amber-500 p-6 md:p-10 rounded-3xl shadow-2xl animate-bounce-slow">
               <Award size={40} className="text-slate-950 mb-2" />
               <div className="text-center lg:text-left">
-                <div className="text-2xl md:text-3xl font-black text-slate-950">7+</div>
+                <div className="text-2xl md:text-3xl font-black text-slate-950">{new Date().getFullYear() - details.estd}+</div>
                 <div className="text-[8px] md:text-[10px] font-black text-slate-900/60 uppercase tracking-widest">Years of Excellence</div>
               </div>
             </div>
@@ -45,15 +46,15 @@ const About: React.FC<AboutProps> = ({ image }) => {
             </div>
             
             <h3 className="text-4xl md:text-6xl font-black leading-[1.1] mb-8 tracking-tighter text-slate-900">
-              Faridabad's Premier <br /><span className="text-slate-400">Logistics Hub.</span>
+              {details.location.split(',')[0]}'s Premier <br /><span className="text-slate-400">Logistics Hub.</span>
             </h3>
             
             <div className="space-y-6 text-base md:text-lg text-slate-600 font-medium leading-relaxed">
               <p>
-                Established as a <strong className="text-slate-900 underline decoration-amber-500 decoration-2 underline-offset-4">Proprietor Firm</strong> in {ESTD_YEAR}, Deluxe Roadways has evolved into a premier name in the Indian logistics sector. Based in {LOCATION}, we serve as the logistical backbone for major industrial players.
+                Established as a <strong className="text-slate-900 underline decoration-amber-500 decoration-2 underline-offset-4">Proprietor Firm</strong> in {details.estd}, {details.name} has evolved into a premier name in the Indian logistics sector. Based in {details.location}, we serve as the logistical backbone for major industrial players.
               </p>
               <p>
-                Under the direct leadership of <strong>{CEO}</strong>, our skilled experts ensure every shipment delivers precision results. We pride ourselves on budget-friendly execution without compromising on global quality standards.
+                Under the direct leadership of <strong>{details.ceo}</strong>, our skilled experts ensure every shipment delivers precision results. We pride ourselves on budget-friendly execution without compromising on global quality standards.
               </p>
             </div>
 

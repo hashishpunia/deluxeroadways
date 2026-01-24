@@ -12,6 +12,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [newReview, setNewReview] = useState({ name: '', company: '', quote: '', rating: 5 });
 
   const approvedTestimonials = testimonials.filter(t => t.approved);
@@ -31,11 +32,11 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
   }, [isAnimating, approvedTestimonials.length]);
 
   useEffect(() => {
-    if (approvedTestimonials.length > 1) {
-      const timer = setInterval(handleNext, 8000);
+    if (approvedTestimonials.length > 1 && !isPaused) {
+      const timer = setInterval(handleNext, 3000);
       return () => clearInterval(timer);
     }
-  }, [handleNext, approvedTestimonials.length]);
+  }, [handleNext, approvedTestimonials.length, isPaused]);
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +75,13 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
 
         <div className="relative max-w-4xl mx-auto">
           {/* Main Carousel Card */}
-          <div className="relative bg-white p-6 md:p-16 rounded-[32px] md:rounded-[40px] border border-slate-200 shadow-xl overflow-hidden min-h-[360px] md:min-h-[400px] flex flex-col justify-center">
+          <div 
+            className="relative bg-white p-6 md:p-16 rounded-[32px] md:rounded-[40px] border border-slate-200 shadow-xl overflow-hidden min-h-[360px] md:min-h-[400px] flex flex-col justify-center cursor-pointer"
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
+            onTouchStart={() => setIsPaused(true)}
+            onTouchEnd={() => setIsPaused(false)}
+          >
             <div 
               className={`transition-all duration-500 ease-in-out transform ${isAnimating ? 'opacity-0 scale-95 translate-x-4' : 'opacity-100 scale-100 translate-x-0'}`}
             >
@@ -85,7 +92,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
               </div>
               
               <div className="mb-8 md:mb-12 relative">
-                <Quote size={40} md:size={80} className="text-slate-50 absolute -top-4 md:-top-10 -left-2 md:-left-6 -z-0" />
+                <Quote size={40} className="text-slate-50 absolute -top-4 md:-top-10 -left-2 md:-left-6 -z-0" />
                 <p className="text-lg md:text-3xl text-slate-700 font-medium leading-relaxed relative z-10 italic">
                   "{approvedTestimonials[currentIndex].quote}"
                 </p>
@@ -105,6 +112,13 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
                 </div>
               </div>
             </div>
+            
+            {/* Interaction Indicator */}
+            {isPaused && (
+              <div className="absolute top-4 right-6 text-[8px] font-black text-slate-300 uppercase tracking-widest animate-pulse">
+                Paused for Reading
+              </div>
+            )}
           </div>
 
           {/* Navigation Controls */}

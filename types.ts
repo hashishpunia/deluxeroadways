@@ -34,3 +34,14 @@ export interface SiteAssets {
   servicesImage?: string;
   footerImage?: string;
 }
+
+export interface CompanyDetails {
+  name: string;
+  ceo: string;
+  address: string;
+  phone: string;
+  email: string;
+  gst: string;
+  location: string;
+  estd: number;
+}

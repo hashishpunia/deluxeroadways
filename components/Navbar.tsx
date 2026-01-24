@@ -1,8 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Truck } from 'lucide-react';
+import { CompanyDetails } from '../types.ts';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  details: CompanyDetails;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ details }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -24,7 +29,7 @@ const Navbar: React.FC = () => {
     const targetId = href.replace('#', '');
     const elem = document.getElementById(targetId);
     if (elem) {
-      const offset = 80; // height of navbar
+      const offset = 80;
       const elementPosition = elem.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
 
@@ -43,7 +48,7 @@ const Navbar: React.FC = () => {
           <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white transition-transform group-hover:scale-110">
             <Truck size={18} />
           </div>
-          <span className="text-lg font-bold tracking-tight">DELUXE<span className="text-amber-500">ROADWAYS</span></span>
+          <span className="text-lg font-bold tracking-tight">{details.name.toUpperCase().split(' ')[0]}<span className="text-amber-500">{details.name.toUpperCase().split(' ').slice(1).join('')}</span></span>
         </a>
 
         <div className="hidden md:flex items-center gap-10">
