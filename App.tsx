@@ -10,6 +10,7 @@ import Contact from './components/Contact.tsx';
 import Footer from './components/Footer.tsx';
 import GeminiAssistant from './components/GeminiAssistant.tsx';
 import AdminPanel from './components/AdminPanel.tsx';
+import Tracking from './components/Tracking.tsx';
 import { 
   SERVICES as INITIAL_SERVICES,
   COMPANY_NAME,
@@ -21,13 +22,14 @@ import {
   CONTACT_PHONE,
   CONTACT_EMAIL
 } from './constants.tsx';
-import { Service, Testimonial, SiteAssets, CompanyDetails } from './types.ts';
+import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment } from './types.ts';
 
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin');
   
   // Dynamic Content States
   const [services, setServices] = useState<Service[]>([]);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [assets, setAssets] = useState<SiteAssets>({
     heroImage: 'https://images.unsplash.com/photo-1621259182978-f09e5e2ca845?auto=format&fit=crop&q=80&w=2400',
@@ -65,6 +67,29 @@ const App: React.FC = () => {
       localStorage.setItem('dr_services', JSON.stringify(mapped));
     }
 
+    // Load Shipments
+    const storedShipments = localStorage.getItem('dr_shipments');
+    if (storedShipments) {
+      setShipments(JSON.parse(storedShipments));
+    } else {
+      const initial: Shipment[] = [
+        {
+          id: '1',
+          trackingNumber: 'DR-2025-001',
+          sender: 'Delhi Hardware Mart',
+          receiver: 'Local Hub Faridabad',
+          origin: 'Faridabad, HR',
+          destination: 'Jaipur, RJ',
+          status: 'in-transit',
+          lastUpdate: new Date().toLocaleString(),
+          estimatedDelivery: 'Feb 28, 2025',
+          description: 'Shipment has left the Faridabad sorting facility and is currently in transit to Jaipur Hub.'
+        }
+      ];
+      setShipments(initial);
+      localStorage.setItem('dr_shipments', JSON.stringify(initial));
+    }
+
     // Load Testimonials
     const storedTestimonials = localStorage.getItem('dr_testimonials');
     if (storedTestimonials) {
@@ -86,33 +111,6 @@ const App: React.FC = () => {
           company: "Chennai Auto Parts",
           role: "Supply Chain Manager",
           quote: "We rely on Deluxe for our heavy-duty component transport from Faridabad to Chennai. Their tracking and safety standards are top-notch.",
-          rating: 5,
-          approved: true
-        },
-        {
-          id: '3',
-          name: "Vikram Singh",
-          company: "Jaipur Stone Exports",
-          role: "Operations Manager",
-          quote: "Handling fragile stone shipments is difficult, but Deluxe Roadways manages our cargo with extreme care. Not a single breakage in 12 months.",
-          rating: 5,
-          approved: true
-        },
-        {
-          id: '4',
-          name: "Sunita Reddy",
-          company: "Hyderabad Pharma Solutions",
-          role: "Distribution Lead",
-          quote: "Their refrigerated truck services are the best in the industry. Highly recommended for pharmaceutical movements where temperature control is critical.",
-          rating: 5,
-          approved: true
-        },
-        {
-          id: '5',
-          name: "Rahul Gupta",
-          company: "Kolkata Retail Hub",
-          role: "Founder",
-          quote: "The team at Deluxe Roadways understands the urgency of retail distribution. Their Tata Shaktee fleet movement is remarkably fast.",
           rating: 5,
           approved: true
         }
@@ -142,6 +140,11 @@ const App: React.FC = () => {
     localStorage.setItem('dr_services', JSON.stringify(newServices));
   };
 
+  const updateShipments = (newShipments: Shipment[]) => {
+    setShipments(newShipments);
+    localStorage.setItem('dr_shipments', JSON.stringify(newShipments));
+  };
+
   const updateTestimonials = (newTestimonials: Testimonial[]) => {
     setTestimonials(newTestimonials);
     localStorage.setItem('dr_testimonials', JSON.stringify(newTestimonials));
@@ -162,6 +165,8 @@ const App: React.FC = () => {
       setAssets={updateAssets}
       companyDetails={companyDetails}
       setCompanyDetails={updateCompanyDetails}
+      shipments={shipments}
+      setShipments={updateShipments}
       onClose={() => {
         window.location.hash = '';
         setIsAdmin(false);
@@ -173,7 +178,15 @@ const App: React.FC = () => {
     <div className="relative min-h-screen">
       <Navbar details={companyDetails} />
       <main>
-        <Hero image={assets.heroImage} details={companyDetails} />
+        <div className="relative">
+          <Hero image={assets.heroImage} details={companyDetails} />
+          <div className="max-w-7xl mx-auto px-6 -mt-32 md:-mt-40 mb-20 relative z-50">
+            <div className="text-center mb-6">
+              <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 inline-block shadow-lg">Real-time Operations</span>
+            </div>
+            <Tracking shipments={shipments} />
+          </div>
+        </div>
         <About image={assets.aboutImage} details={companyDetails} />
         <Services services={services} />
         <Stats />

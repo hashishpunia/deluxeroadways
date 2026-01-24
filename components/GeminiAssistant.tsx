@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from '@google/genai';
-import { MessageSquare, Send, X, Bot, Loader2 } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, Loader2, Minus } from 'lucide-react';
 import { Message, CompanyDetails } from '../types.ts';
 
 interface GeminiAssistantProps {
@@ -79,37 +79,52 @@ const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ details }) => {
     }
   };
 
+  const resetChat = () => {
+    setMessages([{ role: 'model', text: `Namaste! I am the ${details.name} Assistant. How can I help you with your logistics needs today?` }]);
+    setIsOpen(false);
+  };
+
   return (
     <div className={`fixed bottom-0 right-0 md:bottom-6 md:right-6 z-[200] ${isOpen ? 'inset-0 md:inset-auto' : ''}`}>
       {isOpen ? (
-        <div className="bg-white w-full h-full md:w-[400px] md:h-[600px] md:shadow-2xl md:rounded-3xl flex flex-col overflow-hidden border-t md:border border-slate-200 animate-in slide-in-from-bottom duration-300">
+        <div className="bg-white w-full h-full md:w-[340px] md:h-[500px] md:shadow-2xl md:rounded-[2rem] flex flex-col overflow-hidden border-t md:border border-slate-200 animate-in slide-in-from-bottom duration-300">
           {/* Header */}
-          <div className="bg-slate-950 p-4 md:p-5 text-white flex justify-between items-center shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-                <Bot className="text-amber-500" />
+          <div className="bg-slate-950 p-3 md:p-4 text-white flex justify-between items-center shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 md:w-9 md:h-9 bg-white/10 rounded-lg flex items-center justify-center">
+                <Bot className="text-amber-500" size={18} />
               </div>
               <div>
-                <h3 className="font-bold text-sm">Assistant</h3>
-                <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <h3 className="font-bold text-xs md:text-sm">AI Assistant</h3>
+                <p className="text-[9px] text-slate-400 flex items-center gap-1">
+                  <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
                   Online
                 </p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsOpen(false)} 
-              className="hover:bg-white/10 p-2 rounded-xl transition-colors active:scale-90"
-            >
-              <X size={24} />
-            </button>
+            <div className="flex items-center gap-1 md:gap-1.5">
+              <button 
+                onClick={() => setIsOpen(false)} 
+                title="Minimize"
+                className="bg-white/10 hover:bg-white/20 p-1.5 rounded-lg transition-colors active:scale-90 flex items-center justify-center"
+              >
+                <Minus size={16} />
+              </button>
+              <button 
+                onClick={resetChat} 
+                title="Close and Reset Chat"
+                className="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white p-1.5 rounded-lg transition-all active:scale-90 flex items-center justify-center"
+              >
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-slate-50">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-5 space-y-3.5 bg-slate-50">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-4 rounded-2xl text-sm md:text-base leading-relaxed ${
+                <div className={`max-w-[85%] p-3.5 rounded-2xl text-xs md:text-sm leading-relaxed ${
                   msg.role === 'user' 
                   ? 'bg-slate-950 text-white rounded-br-none shadow-md' 
                   : 'bg-white text-slate-800 rounded-bl-none border border-slate-200 shadow-sm'
@@ -120,39 +135,39 @@ const GeminiAssistant: React.FC<GeminiAssistantProps> = ({ details }) => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white p-4 rounded-2xl rounded-bl-none border border-slate-200 flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce"></div>
-                  <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                  <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                <div className="bg-white p-3 md:p-3.5 rounded-2xl rounded-bl-none border border-slate-200 flex gap-1">
+                  <div className="w-1 h-1 bg-slate-300 rounded-full animate-bounce"></div>
+                  <div className="w-1 h-1 bg-slate-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-1 h-1 bg-slate-300 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                 </div>
               </div>
             )}
           </div>
 
           {/* Input */}
-          <div className="p-4 md:p-6 border-t border-slate-100 bg-white pb-safe-area-bottom">
+          <div className="p-4 md:p-5 border-t border-slate-100 bg-white pb-safe-area-bottom">
             <div className="flex gap-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Ask about rates, routes..."
-                className="flex-1 text-sm md:text-base bg-slate-100 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                placeholder="Ask rates, routes..."
+                className="flex-1 text-xs md:text-sm bg-slate-100 border-none rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-amber-500 outline-none transition-all"
               />
               <button 
                 onClick={handleSendMessage}
                 disabled={isLoading}
-                className="bg-slate-950 hover:bg-black text-white px-4 rounded-xl disabled:opacity-50 transition-colors active:scale-95"
+                className="bg-slate-950 hover:bg-black text-white px-3 md:px-4 rounded-xl disabled:opacity-50 transition-colors active:scale-95"
               >
-                {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+                {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
               </button>
             </div>
-            <p className="text-[10px] text-center text-slate-400 mt-3 font-bold uppercase tracking-widest">{details.name} AI</p>
+            <p className="text-[8px] text-center text-slate-400 mt-2.5 font-bold uppercase tracking-widest">{details.name} AI</p>
           </div>
         </div>
       ) : (
-        <div className="p-4 md:p-0">
+        <div className="p-4 md:p-0 relative">
           <button
             onClick={() => setIsOpen(true)}
             className="bg-slate-950 hover:bg-black text-white p-4 md:p-5 rounded-full shadow-2xl group flex items-center gap-3 transition-all active:scale-90"

@@ -45,3 +45,18 @@ export interface CompanyDetails {
   location: string;
   estd: number;
 }
+
+export type ShipmentStatus = 'dispatched' | 'in-transit' | 'near-destination' | 'delivered';
+
+export interface Shipment {
+  id: string;
+  trackingNumber: string;
+  sender: string;
+  receiver: string;
+  origin: string;
+  destination: string;
+  status: ShipmentStatus;
+  lastUpdate: string;
+  estimatedDelivery: string;
+  description: string;
+}

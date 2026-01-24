@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Inbox, LogOut, Trash2, CheckCircle2, Clock, Truck, Users, Plus, Edit, Image as ImageIcon, X, Save, Upload, Settings } from 'lucide-react';
-import { Service, Testimonial, SiteAssets, CompanyDetails } from '../types.ts';
+import { LayoutDashboard, Inbox, LogOut, Trash2, CheckCircle2, Clock, Truck, Users, Plus, Edit, Image as ImageIcon, X, Save, Upload, Settings, MapPin, Package } from 'lucide-react';
+import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment, ShipmentStatus } from '../types.ts';
 
 interface Inquiry {
   id: number;
@@ -23,6 +23,8 @@ interface AdminPanelProps {
   setAssets: (a: SiteAssets) => void;
   companyDetails: CompanyDetails;
   setCompanyDetails: (c: CompanyDetails) => void;
+  shipments: Shipment[];
+  setShipments: (s: Shipment[]) => void;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ 
@@ -34,13 +36,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   assets, 
   setAssets,
   companyDetails,
-  setCompanyDetails
+  setCompanyDetails,
+  shipments,
+  setShipments
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'inquiries' | 'services' | 'testimonials' | 'assets' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'inquiries' | 'services' | 'testimonials' | 'assets' | 'settings' | 'shipments'>('dashboard');
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editingShipment, setEditingShipment] = useState<Shipment | null>(null);
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('dr_inquiries') || '[]');
@@ -67,6 +72,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     const updated = inquiries.filter(q => q.id !== id);
     setInquiries(updated);
     localStorage.setItem('dr_inquiries', JSON.stringify(updated));
+  };
+
+  const handleSaveShipment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingShipment) return;
+    
+    if (shipments.find(s => s.id === editingShipment.id)) {
+      setShipments(shipments.map(s => s.id === editingShipment.id ? { ...editingShipment, lastUpdate: new Date().toLocaleString() } : s));
+    } else {
+      setShipments([...shipments, { ...editingShipment, lastUpdate: new Date().toLocaleString() }]);
+    }
+    setEditingShipment(null);
+  };
+
+  const deleteShipment = (id: string) => {
+    if (!confirm('Delete this shipment record?')) return;
+    setShipments(shipments.filter(s => s.id !== id));
   };
 
   const handleSaveService = (e: React.FormEvent) => {
@@ -173,6 +195,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
             {[
               { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
               { id: 'inquiries', icon: Inbox, label: 'Inquiries', count: inquiries.filter(i => i.status === 'new').length },
+              { id: 'shipments', icon: MapPin, label: 'Tracking System' },
               { id: 'services', icon: Truck, label: 'Manage Services' },
               { id: 'testimonials', icon: Users, label: 'Testimonials' },
               { id: 'assets', icon: ImageIcon, label: 'Site Assets' },
@@ -213,7 +236,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4">
             {[
               { label: 'Active Inquiries', value: inquiries.length, icon: Inbox, color: 'text-blue-500' },
-              { label: 'Unread Items', value: inquiries.filter(i => i.status === 'new').length, icon: Clock, color: 'text-amber-500' },
+              { label: 'Live Shipments', value: shipments.length, icon: MapPin, color: 'text-amber-500' },
               { label: 'Fleet Services', value: services.length, icon: Truck, color: 'text-purple-500' },
               { label: 'Total Reviews', value: testimonials.length, icon: Users, color: 'text-green-500' }
             ].map((stat, i) => (
@@ -225,6 +248,119 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="text-3xl font-black text-slate-900">{stat.value}</div>
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'shipments' && (
+          <div className="space-y-8 animate-in fade-in">
+             <div className="flex justify-between items-center">
+              <h3 className="text-xl font-bold">Consignment Tracking Management</h3>
+              <button 
+                onClick={() => setEditingShipment({ 
+                  id: Date.now().toString(), 
+                  trackingNumber: `DR-2025-${Math.floor(100 + Math.random() * 900)}`, 
+                  sender: '', 
+                  receiver: '', 
+                  origin: '', 
+                  destination: '', 
+                  status: 'dispatched', 
+                  lastUpdate: new Date().toLocaleString(),
+                  estimatedDelivery: '3-5 Business Days',
+                  description: 'Shipment dispatched from Faridabad Hub.'
+                })}
+                className="btn-primary flex gap-2 items-center"
+              >
+                <Plus size={18} /> New Consignment
+              </button>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-100">
+                  <tr>
+                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tracking ID</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Route</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {shipments.map((s) => (
+                    <tr key={s.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-8 py-6">
+                        <div className="font-bold text-slate-900">{s.trackingNumber}</div>
+                        <div className="text-[10px] text-slate-400 font-medium">To: {s.receiver}</div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="text-sm font-bold text-slate-700">{s.origin} <span className="text-amber-500">→</span> {s.destination}</div>
+                        <div className="text-[10px] text-slate-400 font-medium">{s.lastUpdate}</div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                          s.status === 'delivered' ? 'bg-green-100 text-green-600' : 
+                          s.status === 'in-transit' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'
+                        }`}>{s.status}</span>
+                      </td>
+                      <td className="px-8 py-6 text-right space-x-2">
+                        <button onClick={() => setEditingShipment(s)} className="p-2 text-slate-400 hover:text-slate-900"><Edit size={18} /></button>
+                        <button onClick={() => deleteShipment(s.id)} className="p-2 text-slate-400 hover:text-red-600"><Trash2 size={18} /></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {editingShipment && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] flex items-center justify-center p-6">
+                <div className="bg-white rounded-[40px] p-10 w-full max-w-2xl shadow-2xl relative overflow-hidden">
+                   <button onClick={() => setEditingShipment(null)} className="absolute top-6 right-8 text-slate-400 hover:text-slate-950"><X size={24} /></button>
+                   <h3 className="text-2xl font-black mb-8">Update Consignment</h3>
+                   <form onSubmit={handleSaveShipment} className="space-y-6">
+                     <div className="grid grid-cols-2 gap-6">
+                       <div className="space-y-1">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tracking Number</label>
+                         <input required value={editingShipment.trackingNumber} onChange={e => setEditingShipment({...editingShipment, trackingNumber: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none font-mono" />
+                       </div>
+                       <div className="space-y-1">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Status</label>
+                         <select value={editingShipment.status} onChange={e => setEditingShipment({...editingShipment, status: e.target.value as ShipmentStatus})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none">
+                            <option value="dispatched">Dispatched</option>
+                            <option value="in-transit">In Transit</option>
+                            <option value="near-destination">Near Destination Hub</option>
+                            <option value="delivered">Delivered</option>
+                         </select>
+                       </div>
+                       <div className="space-y-1">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Origin</label>
+                         <input required value={editingShipment.origin} onChange={e => setEditingShipment({...editingShipment, origin: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                       </div>
+                       <div className="space-y-1">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Destination</label>
+                         <input required value={editingShipment.destination} onChange={e => setEditingShipment({...editingShipment, destination: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                       </div>
+                       <div className="space-y-1">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sender Name</label>
+                         <input required value={editingShipment.sender} onChange={e => setEditingShipment({...editingShipment, sender: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                       </div>
+                       <div className="space-y-1">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Receiver Name</label>
+                         <input required value={editingShipment.receiver} onChange={e => setEditingShipment({...editingShipment, receiver: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                       </div>
+                     </div>
+                     <div className="space-y-1">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estimated Delivery Date</label>
+                       <input value={editingShipment.estimatedDelivery} onChange={e => setEditingShipment({...editingShipment, estimatedDelivery: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                     </div>
+                     <div className="space-y-1">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Latest Updates (Displayed to Client)</label>
+                       <textarea required rows={3} value={editingShipment.description} onChange={e => setEditingShipment({...editingShipment, description: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none resize-none" placeholder="e.g., Cargo reached Jaipur warehouse for further dispatch." />
+                     </div>
+                     <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">Update Tracking <Save size={18} /></button>
+                   </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

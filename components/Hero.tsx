@@ -23,7 +23,7 @@ const Hero: React.FC<HeroProps> = ({ image, details }) => {
   };
 
   return (
-    <section id="home" className="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-4 pt-24 pb-12 overflow-hidden bg-white">
+    <section id="home" className="relative min-h-[100vh] flex flex-col items-center justify-start text-center px-4 pt-32 md:pt-40 pb-48 overflow-hidden bg-white">
       {/* Background Decorative Gradient */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-amber-50/50 via-transparent to-transparent -z-10"></div>
       
@@ -33,7 +33,7 @@ const Hero: React.FC<HeroProps> = ({ image, details }) => {
           Established {details.estd} • {details.location}
         </div>
         
-        <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter text-slate-950 mb-6 md:mb-8 leading-[1] md:leading-[0.9] animate-in fade-in slide-in-from-bottom-4 duration-1000">
+        <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter text-slate-950 mb-6 md:mb-8 leading-[1] md:leading-[0.9] animate-in fade-in slide-in-from-bottom-4 duration-1000">
           {details.name.split(' ')[0]}<br className="hidden sm:block" />
           <span className="text-slate-300">{details.name.split(' ').slice(1).join(' ')}.</span>
         </h1>
@@ -58,14 +58,7 @@ const Hero: React.FC<HeroProps> = ({ image, details }) => {
         </div>
       </div>
 
-      <div className="mt-12 md:mt-24 w-full max-w-7xl aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] rounded-[24px] sm:rounded-[48px] overflow-hidden shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1)] md:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] animate-in fade-in zoom-in duration-1000 border-4 sm:border-8 border-white mx-auto relative group">
-        <img 
-          src={image} 
-          className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000"
-          alt="Premium Logistics Fleet"
-        />
-        <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-all"></div>
-      </div>
+      <div className="absolute bottom-0 left-0 w-full h-[30%] bg-gradient-to-t from-white to-transparent z-0"></div>
     </section>
   );
 };
