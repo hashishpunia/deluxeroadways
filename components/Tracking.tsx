@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Package, MapPin, Clock, CheckCircle2, Truck, X, Navigation } from 'lucide-react';
+/* Added Phone to the lucide-react imports to fix the "Cannot find name 'Phone'" error */
+import { Search, Package, MapPin, Clock, CheckCircle2, Truck, X, Navigation, Locate, Phone } from 'lucide-react';
 import { Shipment, ShipmentStatus } from '../types.ts';
 
 interface TrackingProps {
@@ -12,17 +13,19 @@ const Tracking: React.FC<TrackingProps> = ({ shipments }) => {
   const [result, setResult] = useState<Shipment | null>(null);
   const [error, setError] = useState(false);
 
-  // Sync results if shipments update (useful for real-time admin changes)
+  // Sync results if shipments update (real-time responsiveness)
   useEffect(() => {
     if (result) {
-      const updated = shipments.find(s => s.trackingNumber === result.trackingNumber);
+      const updated = shipments.find(s => s.trackingNumber.toUpperCase() === result.trackingNumber.toUpperCase());
       if (updated) setResult(updated);
     }
-  }, [shipments]);
+  }, [shipments, result]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanId = trackingId.trim().toUpperCase();
+    if (!cleanId) return;
+
     const found = shipments.find(s => s.trackingNumber.toUpperCase() === cleanId);
     
     if (found) {
@@ -31,8 +34,7 @@ const Tracking: React.FC<TrackingProps> = ({ shipments }) => {
     } else {
       setResult(null);
       setError(true);
-      // Auto clear error after 3s
-      setTimeout(() => setError(false), 3000);
+      setTimeout(() => setError(false), 4000);
     }
   };
 
@@ -49,111 +51,130 @@ const Tracking: React.FC<TrackingProps> = ({ shipments }) => {
   ];
 
   return (
-    <div className="w-full max-w-2xl mx-auto mt-8 md:mt-12 relative z-20 px-2 md:px-0">
+    <div className="w-full max-w-2xl mx-auto mt-6 md:mt-12 relative z-20 px-4 md:px-0">
       <form onSubmit={handleSearch} className="relative group">
-        <input
-          type="text"
-          value={trackingId}
-          onChange={(e) => setTrackingId(e.target.value)}
-          placeholder="Enter Tracking ID (DR-2025-XXX)"
-          className="w-full bg-white border-2 border-slate-100 rounded-2xl md:rounded-3xl py-4 md:py-5 px-6 md:px-8 pr-14 md:pr-16 text-base md:text-lg font-bold text-slate-900 shadow-2xl focus:border-amber-500 outline-none transition-all placeholder:text-slate-300"
-        />
-        <button 
-          type="submit"
-          className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 bg-slate-950 text-white p-2.5 md:p-3.5 rounded-xl md:rounded-2xl hover:bg-amber-500 hover:text-slate-950 transition-all active:scale-95"
-        >
-          <Search size={20} />
-        </button>
+        <div className="relative">
+          <input
+            type="text"
+            value={trackingId}
+            onChange={(e) => setTrackingId(e.target.value)}
+            placeholder="Search Tracking ID (DR-2025-XXX)"
+            className="w-full bg-white border-2 border-slate-100 rounded-2xl md:rounded-3xl py-4 md:py-6 px-6 md:px-10 pr-16 md:pr-20 text-sm md:text-lg font-bold text-slate-900 shadow-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder:text-slate-300"
+          />
+          <button 
+            type="submit"
+            className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 bg-slate-950 text-white p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-amber-500 hover:text-slate-950 transition-all active:scale-90 flex items-center justify-center shadow-lg"
+            aria-label="Track Shipment"
+          >
+            <Search size={20} md:size={24} />
+          </button>
+        </div>
       </form>
 
       {error && (
-        <div className="mt-4 text-center text-red-500 font-bold text-xs md:text-sm animate-in fade-in slide-in-from-top-2">
-          Consignment not found. Please check the ID and try again.
+        <div className="mt-4 text-center text-red-500 font-bold text-xs md:text-sm animate-bounce">
+          Consignment not found. Please verify the Tracking ID.
         </div>
       )}
 
       {result && (
-        <div className="fixed inset-0 z-[300] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-2 md:p-4 overflow-y-auto">
-          <div className="bg-white w-full max-w-3xl rounded-[2rem] md:rounded-[40px] shadow-2xl overflow-hidden relative animate-in zoom-in duration-300 my-auto">
-            <button 
-              onClick={() => setResult(null)}
-              className="absolute top-4 right-4 md:top-6 md:right-8 p-2 text-slate-400 hover:text-slate-950 bg-slate-50 rounded-full transition-colors z-10"
-            >
-              <X size={20} md:size={24} />
-            </button>
-
-            <div className="p-6 md:p-12">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-8 md:mb-12 border-b border-slate-100 pb-6 md:pb-8">
+        <div className="fixed inset-0 z-[300] bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-0 md:p-4 overflow-y-auto">
+          <div className="bg-white w-full h-full md:h-auto md:max-w-4xl md:rounded-[40px] shadow-2xl overflow-hidden relative animate-in zoom-in slide-in-from-bottom-10 duration-500 flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="p-6 md:p-10 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20">
+                  <Package size={20} />
+                </div>
                 <div>
-                  <div className="text-[9px] md:text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">Live Tracking</div>
-                  <h3 className="text-2xl md:text-3xl font-black text-slate-950">{result.trackingNumber}</h3>
-                </div>
-                <div className="bg-slate-50 px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl border border-slate-100 flex md:block items-center justify-between gap-4">
-                  <div className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Est. Delivery</div>
-                  <div className="font-bold text-slate-900 text-sm md:text-base">{result.estimatedDelivery}</div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-8 md:mb-12">
-                <div className="space-y-4 md:space-y-6">
-                  <div className="flex gap-4">
-                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
-                      <MapPin className="text-amber-600" size={18} />
-                    </div>
-                    <div>
-                      <div className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Origin</div>
-                      <div className="font-bold text-slate-900 text-sm md:text-base">{result.origin}</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center shrink-0">
-                      <MapPin className="text-white" size={18} />
-                    </div>
-                    <div>
-                      <div className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest">Destination</div>
-                      <div className="font-bold text-slate-900 text-sm md:text-base">{result.destination}</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-4 p-3 md:p-4 bg-amber-50/50 rounded-2xl border border-amber-100">
-                    <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shrink-0">
-                      <Navigation className="text-white" size={18} />
-                    </div>
-                    <div>
-                      <div className="text-[8px] md:text-[10px] font-black text-amber-600 uppercase tracking-widest">Current Location</div>
-                      <div className="font-bold text-slate-900 text-sm md:text-base">{result.currentLocation || "In Transit"}</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-slate-50 p-5 md:p-6 rounded-3xl border border-slate-100">
-                  <div className="text-[8px] md:text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Latest Update</div>
-                  <p className="text-xs md:text-sm font-bold text-slate-700 leading-relaxed mb-4">{result.description}</p>
-                  <div className="flex items-center gap-2 text-[8px] md:text-[10px] font-medium text-slate-400">
-                    <Clock size={12} />
-                    {result.lastUpdate}
+                  <h3 className="text-xl md:text-2xl font-black text-slate-950 tracking-tight">{result.trackingNumber}</h3>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    Live Tracking
                   </div>
                 </div>
               </div>
+              <button 
+                onClick={() => setResult(null)}
+                className="p-3 text-slate-400 hover:text-slate-950 hover:bg-slate-100 rounded-full transition-all active:scale-90"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
-              {/* Progress Stepper - Optimized for Mobile */}
-              <div className="relative pt-6 md:pt-8 px-2 md:px-4">
-                <div className="absolute top-[34px] md:top-[42px] left-0 w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+            <div className="flex-1 overflow-y-auto p-6 md:p-12">
+              {/* Desktop/Tablet Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 mb-10 md:mb-16">
+                <div className="space-y-6 md:space-y-8">
+                  <div className="relative pl-8 border-l-2 border-slate-100 space-y-8">
+                    <div className="relative">
+                      <div className="absolute -left-[41px] top-0 w-5 h-5 bg-white border-4 border-slate-200 rounded-full"></div>
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Origin</div>
+                      <div className="text-lg md:text-xl font-bold text-slate-900">{result.origin}</div>
+                    </div>
+                    <div className="relative p-5 bg-amber-50 rounded-2xl border border-amber-100 shadow-sm animate-pulse-slow">
+                      <div className="absolute -left-[41px] top-1/2 -translate-y-1/2 w-5 h-5 bg-amber-500 rounded-full shadow-lg shadow-amber-500/40"></div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <Locate size={14} className="text-amber-600" />
+                        <div className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Current Status</div>
+                      </div>
+                      <div className="text-lg md:text-xl font-black text-slate-900">{result.currentLocation}</div>
+                    </div>
+                    <div className="relative">
+                      <div className="absolute -left-[41px] top-0 w-5 h-5 bg-slate-950 rounded-full border-4 border-white shadow-lg"></div>
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Final Destination</div>
+                      <div className="text-lg md:text-xl font-bold text-slate-900">{result.destination}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-100 flex flex-col justify-between">
+                  <div className="space-y-6">
+                    <div>
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Detailed Status</div>
+                      <p className="text-sm md:text-base font-bold text-slate-700 leading-relaxed italic">"{result.description}"</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Delivery Est.</div>
+                        <div className="text-sm md:text-base font-bold text-slate-900">{result.estimatedDelivery}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Last Sync</div>
+                        <div className="text-sm md:text-base font-bold text-slate-900">{result.lastUpdate.split(',')[0]}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-8 pt-6 border-t border-slate-200">
+                    <div className="flex items-center gap-3 text-slate-400">
+                      <Clock size={16} />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">Tracking History Updated Just Now</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Stepper */}
+              <div className="relative pb-10">
+                <div className="absolute top-[22px] md:top-[28px] left-[20px] md:left-[40px] right-[20px] md:right-[40px] h-1 md:h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-amber-500 transition-all duration-1000 ease-out"
+                    className="h-full bg-amber-500 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(245,158,11,0.5)]"
                     style={{ width: `${(getStatusIndex(result.status) / (steps.length - 1)) * 100}%` }}
                   />
                 </div>
                 
-                <div className="relative flex justify-between">
+                <div className="relative flex justify-between px-0 md:px-5">
                   {steps.map((step, idx) => {
                     const isActive = getStatusIndex(result.status) >= idx;
+                    const isCurrent = getStatusIndex(result.status) === idx;
                     const Icon = step.icon;
                     return (
-                      <div key={step.id} className="flex flex-col items-center">
-                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-4 border-white shadow-xl flex items-center justify-center transition-all duration-500 relative z-10 ${isActive ? 'bg-amber-500 text-slate-950 scale-110' : 'bg-slate-100 text-slate-300'}`}>
-                          <Icon size={16} md:size={20} />
+                      <div key={step.id} className="flex flex-col items-center flex-1">
+                        <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full border-4 border-white shadow-xl flex items-center justify-center transition-all duration-700 relative z-10 ${isActive ? 'bg-amber-500 text-slate-950 scale-110' : 'bg-slate-100 text-slate-300'} ${isCurrent ? 'ring-4 ring-amber-500/20' : ''}`}>
+                          <Icon size={isActive ? 20 : 18} md:size={isActive ? 24 : 20} className={isCurrent ? 'animate-pulse' : ''} />
                         </div>
-                        <span className={`mt-3 md:mt-4 text-[7px] md:text-[10px] font-black uppercase tracking-widest text-center transition-colors ${isActive ? 'text-slate-900' : 'text-slate-300'}`}>
+                        <span className={`mt-3 md:mt-4 text-[8px] md:text-[10px] font-black uppercase tracking-widest text-center transition-colors px-1 ${isActive ? 'text-slate-900' : 'text-slate-300'}`}>
                           {step.label}
                         </span>
                       </div>
@@ -163,8 +184,15 @@ const Tracking: React.FC<TrackingProps> = ({ shipments }) => {
               </div>
             </div>
             
-            <div className="bg-slate-50 p-4 md:p-6 text-center border-t border-slate-100">
-              <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider">Secure Logistics by Deluxe Roadways</p>
+            <div className="bg-slate-950 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-4 mt-auto">
+              <div className="text-white/40 text-[9px] font-black uppercase tracking-[0.2em]">Secure Transit Protected by Deluxe</div>
+              <div className="flex gap-4">
+                <button className="text-white/60 hover:text-amber-500 text-[10px] font-bold uppercase tracking-widest transition-colors flex items-center gap-2">
+                  <Phone size={12} /> Support Helpdesk
+                </button>
+                <div className="h-4 w-[1px] bg-white/10 hidden md:block"></div>
+                <button className="text-white/60 hover:text-amber-500 text-[10px] font-bold uppercase tracking-widest transition-colors">Inquiry #890</button>
+              </div>
             </div>
           </div>
         </div>
