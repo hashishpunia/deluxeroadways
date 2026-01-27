@@ -55,6 +55,7 @@ export interface Shipment {
   receiver: string;
   origin: string;
   destination: string;
+  currentLocation: string;
   status: ShipmentStatus;
   lastUpdate: string;
   estimatedDelivery: string;

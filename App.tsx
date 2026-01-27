@@ -50,9 +50,7 @@ const App: React.FC = () => {
   useEffect(() => {
     // Load Company Details
     const storedDetails = localStorage.getItem('dr_company_details');
-    if (storedDetails) {
-      setCompanyDetails(JSON.parse(storedDetails));
-    }
+    if (storedDetails) setCompanyDetails(JSON.parse(storedDetails));
 
     // Load Services
     const storedServices = localStorage.getItem('dr_services');
@@ -77,13 +75,14 @@ const App: React.FC = () => {
           id: '1',
           trackingNumber: 'DR-2025-001',
           sender: 'Delhi Hardware Mart',
-          receiver: 'Local Hub Faridabad',
+          receiver: 'Faridabad Hub',
           origin: 'Faridabad, HR',
           destination: 'Jaipur, RJ',
+          currentLocation: 'Jaipur Sorting Facility',
           status: 'in-transit',
           lastUpdate: new Date().toLocaleString(),
           estimatedDelivery: 'Feb 28, 2025',
-          description: 'Shipment has left the Faridabad sorting facility and is currently in transit to Jaipur Hub.'
+          description: 'Shipment has left the Faridabad hub and is currently at Jaipur Sorting Facility.'
         }
       ];
       setShipments(initial);
@@ -101,16 +100,7 @@ const App: React.FC = () => {
           name: "Amit Sharma",
           company: "Delhi Hardware Mart",
           role: "Logistics Head",
-          quote: "Deluxe Roadways has been our trusted partner for 4 years now. Their mini-truck service in the NCR region is exceptionally punctual and cost-effective.",
-          rating: 5,
-          approved: true
-        },
-        {
-          id: '2',
-          name: "Priya Iyer",
-          company: "Chennai Auto Parts",
-          role: "Supply Chain Manager",
-          quote: "We rely on Deluxe for our heavy-duty component transport from Faridabad to Chennai. Their tracking and safety standards are top-notch.",
+          quote: "Deluxe Roadways has been our trusted partner for years. Their mini-truck service is exceptionally punctual.",
           rating: 5,
           approved: true
         }
@@ -180,9 +170,9 @@ const App: React.FC = () => {
       <main>
         <div className="relative">
           <Hero image={assets.heroImage} details={companyDetails} />
-          <div className="max-w-7xl mx-auto px-6 -mt-32 md:-mt-40 mb-20 relative z-50">
+          <div className="max-w-7xl mx-auto px-6 -mt-24 sm:-mt-32 md:-mt-40 mb-20 relative z-50">
             <div className="text-center mb-6">
-              <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 inline-block shadow-lg">Real-time Operations</span>
+              <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 inline-block shadow-lg">Fleet Operations Hub</span>
             </div>
             <Tracking shipments={shipments} />
           </div>
