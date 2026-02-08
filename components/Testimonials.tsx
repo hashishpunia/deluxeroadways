@@ -67,49 +67,50 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
       onTouchEnd={() => setIsPaused(false)}
     >
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-10 md:mb-16 relative">
-          <h2 className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-amber-600 mb-4 md:mb-6">Corporate Excellence</h2>
-          <h3 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-            The Choice of <br/><span className="text-slate-400">Industry Leaders.</span>
+        {/* Header Section matching the image */}
+        <div className="text-center mb-12 md:mb-16 relative">
+          <h2 className="text-[10px] md:text-sm font-bold uppercase tracking-[0.2em] text-amber-500 mb-4">CLIENT SUCCESS</h2>
+          <h3 className="text-4xl md:text-7xl font-black text-slate-900 tracking-tighter mb-4">
+            Trusted by Industry Leaders.
           </h3>
-          <p className="text-slate-500 mt-4 md:text-lg font-medium max-w-2xl mx-auto">
-            Experience reliable logistics through the eyes of our prominent industrial partners.
+          <p className="text-slate-500 text-base md:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+            Businesses across India rely on Deluxe Roadways for their critical logistics requirements.
           </p>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="mt-8 flex items-center gap-2 mx-auto text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors group"
+            className="mt-10 flex items-center justify-center gap-2 mx-auto text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors group"
           >
-            <Plus size={16} className="group-hover:rotate-90 transition-transform" /> Submit Your Review
+            <Plus size={16} className="group-hover:rotate-90 transition-transform" /> WRITE A REVIEW
           </button>
         </div>
 
-        <div className="relative max-w-4xl mx-auto">
-          {/* Main Carousel Card */}
+        <div className="relative max-w-5xl mx-auto">
+          {/* Testimonial Card matching the image styling */}
           <div 
-            className={`relative bg-white p-6 md:p-16 rounded-[32px] md:rounded-[40px] border-2 transition-all duration-300 ${isPaused ? 'border-amber-400 shadow-2xl scale-[1.02]' : 'border-slate-100 shadow-xl scale-100'} overflow-hidden min-h-[360px] md:min-h-[400px] flex flex-col justify-center`}
+            className={`relative bg-white p-8 md:p-20 rounded-[48px] border border-slate-100 transition-all duration-300 ${isPaused ? 'shadow-2xl scale-[1.01]' : 'shadow-xl scale-100'} overflow-hidden min-h-[380px] md:min-h-[420px] flex flex-col justify-center`}
           >
             <div 
               className={`transition-all duration-500 ease-in-out transform ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
             >
-              <div className="flex gap-1 mb-6 md:mb-8">
+              <div className="flex gap-1 mb-8">
                 {[...Array(approvedTestimonials[currentIndex].rating)].map((_, idx) => (
-                  <Star key={idx} size={14} className="fill-amber-400 text-amber-400" />
+                  <Star key={idx} size={16} className="fill-amber-400 text-amber-400" />
                 ))}
               </div>
               
-              <div className="mb-8 md:mb-12 relative">
-                <Quote size={60} className="text-slate-50 absolute -top-10 -left-6 -z-0" />
-                <p className="text-lg md:text-2xl text-slate-700 font-medium leading-relaxed relative z-10 italic">
+              <div className="mb-10 relative">
+                <Quote size={80} className="text-slate-50 absolute -top-12 -left-8 -z-0" />
+                <p className="text-2xl md:text-4xl text-slate-800 font-medium leading-relaxed relative z-10 italic">
                   "{approvedTestimonials[currentIndex].quote}"
                 </p>
               </div>
 
-              <div className="flex items-center gap-4 md:gap-5">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-slate-900 rounded-xl md:rounded-2xl flex items-center justify-center text-white font-bold text-xl md:text-2xl">
+              <div className="flex items-center gap-5">
+                <div className="w-14 h-14 md:w-16 md:h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-white font-bold text-2xl">
                   {approvedTestimonials[currentIndex].name.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight leading-none mb-1">
+                  <h4 className="text-base md:text-xl font-black text-slate-900 uppercase tracking-tight leading-none mb-1">
                     {approvedTestimonials[currentIndex].name}
                   </h4>
                   <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
@@ -119,22 +120,22 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
               </div>
             </div>
             
-            {/* Interaction Indicator */}
+            {/* Hover Indicator */}
             {isPaused && (
-              <div className="absolute bottom-4 right-8 text-[8px] font-black text-amber-500 uppercase tracking-[0.3em] animate-pulse">
-                Paused for Reading
+              <div className="absolute bottom-6 right-10 text-[8px] font-black text-amber-500 uppercase tracking-[0.3em] animate-pulse">
+                Slider Paused
               </div>
             )}
           </div>
 
           {/* Navigation Controls */}
           {approvedTestimonials.length > 1 && (
-            <div className="flex justify-center md:justify-between items-center mt-8 md:mt-0 gap-6 md:absolute md:top-1/2 md:-translate-y-1/2 md:w-[calc(100%+120px)] md:-left-[60px]">
-              <button onClick={handlePrev} className="p-4 rounded-full bg-white border border-slate-200 text-slate-900 hover:bg-slate-950 hover:text-white transition-all shadow-lg active:scale-90">
-                <ChevronLeft size={24} />
+            <div className="flex justify-center md:justify-between items-center mt-10 md:mt-0 gap-6 md:absolute md:top-1/2 md:-translate-y-1/2 md:w-[calc(100%+140px)] md:-left-[70px]">
+              <button onClick={handlePrev} className="p-5 rounded-full bg-white border border-slate-100 text-slate-900 hover:bg-slate-950 hover:text-white transition-all shadow-lg active:scale-90">
+                <ChevronLeft size={28} />
               </button>
-              <button onClick={handleNext} className="p-4 rounded-full bg-white border border-slate-200 text-slate-900 hover:bg-slate-950 hover:text-white transition-all shadow-lg active:scale-90">
-                <ChevronRight size={24} />
+              <button onClick={handleNext} className="p-5 rounded-full bg-white border border-slate-100 text-slate-900 hover:bg-slate-950 hover:text-white transition-all shadow-lg active:scale-90">
+                <ChevronRight size={28} />
               </button>
             </div>
           )}
@@ -147,24 +148,24 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
           <div className="bg-white rounded-[40px] p-8 md:p-12 w-full max-w-xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
             <button onClick={() => setIsModalOpen(false)} className="absolute top-10 right-10 text-slate-400 hover:text-slate-900"><X size={32} /></button>
             <div className="overflow-y-auto px-1">
-              <h3 className="text-2xl font-black mb-8 tracking-tight">Client Satisfaction Report</h3>
+              <h3 className="text-2xl font-black mb-8 tracking-tight uppercase">Write A Review</h3>
               <form onSubmit={handleSubmitReview} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identify Name</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Name</label>
                     <input required value={newReview.name} onChange={e => setNewReview({...newReview, name: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-sm" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Corporate Entity</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Company</label>
                     <input required value={newReview.company} onChange={e => setNewReview({...newReview, company: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-sm" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Feedback Statement</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Message</label>
                   <textarea required rows={4} value={newReview.quote} onChange={e => setNewReview({...newReview, quote: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none resize-none font-medium text-sm italic" placeholder="How was your logistics experience?" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Service Grade</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating</label>
                   <div className="flex gap-2">
                     {[1,2,3,4,5].map(num => (
                       <button key={num} type="button" onClick={() => setNewReview({...newReview, rating: num})} className="p-2 transition-transform hover:scale-110">
@@ -174,7 +175,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
                   </div>
                 </div>
                 <button type="submit" className="btn-primary w-full py-5 text-sm gap-3 shadow-xl">
-                  Commit Review <Send size={18} />
+                  SUBMIT REVIEW <Send size={18} />
                 </button>
               </form>
             </div>

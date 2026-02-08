@@ -41,7 +41,7 @@ export const INITIAL_TESTIMONIALS = [
     name: "Amit Sharma",
     company: "Delhi Hardware Mart",
     role: "Logistics Head",
-    quote: "Deluxe Roadways has been our trusted partner for years. Their mini-truck service is exceptionally punctual and professional.",
+    quote: "Deluxe Roadways has been our primary carrier for ODC movements since 2018. Their professionalism and adherence to safety standards are commendable.",
     rating: 5,
     approved: true
   },
@@ -68,7 +68,7 @@ export const INITIAL_TESTIMONIALS = [
     name: "Vikram Adityan",
     company: "Global Exports Ltd",
     role: "CEO",
-    quote: "Professionalism at its peak. Deluxe Roadways is more than a transporter; they are a strategic logistics partner.",
+    quote: "Professionalism at its peak. Deluxe Roadways is more than a transporter; they are a strategic logistics partner for our ODC requirements.",
     rating: 5,
     approved: true
   },
@@ -77,7 +77,7 @@ export const INITIAL_TESTIMONIALS = [
     name: "Suresh Gupta",
     company: "Gupta & Sons",
     role: "Proprietor",
-    quote: "Reliable, budget-friendly, and honest. Ram Bhagat and his team ensure complete peace of mind for our cargo.",
+    quote: "Reliable, budget-friendly, and honest. Ram Bhagat and his team ensure complete peace of mind for our cargo movements since day one.",
     rating: 4,
     approved: true
   }
