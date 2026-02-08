@@ -1,7 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Inbox, LogOut, Trash2, CheckCircle2, Clock, Truck, Users, Plus, Edit, Image as ImageIcon, X, Save, Upload, Settings, MapPin, Package, Navigation, ArrowRight, SaveIcon } from 'lucide-react';
-import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment, ShipmentStatus } from '../types.ts';
+import { 
+  LayoutDashboard, Inbox, LogOut, Trash2, CheckCircle2, Clock, 
+  Truck, Users, Plus, Edit, Image as ImageIcon, X, Save, 
+  Upload, Settings, MapPin, Package, Navigation, ArrowRight, 
+  SaveIcon, AlertCircle, RefreshCw, Facebook, Twitter, Linkedin, Instagram, Link
+} from 'lucide-react';
+import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment, ShipmentStatus, SocialLink, FooterLink } from '../types.ts';
 
 interface Inquiry {
   id: number;
@@ -46,6 +51,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [editingShipment, setEditingShipment] = useState<Shipment | null>(null);
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('dr_inquiries') || '[]');
@@ -64,7 +70,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const generateYearlyTrackingId = () => {
     const year = new Date().getFullYear();
     const currentYearShipments = shipments.filter(s => s.trackingNumber.startsWith(`DR-${year}-`));
-    
     let nextNum = 1;
     if (currentYearShipments.length > 0) {
       const numbers = currentYearShipments.map(s => {
@@ -73,127 +78,84 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
       });
       nextNum = Math.max(...numbers) + 1;
     }
-
     return `DR-${year}-${nextNum.toString().padStart(3, '0')}`;
   };
 
   const handleSaveShipment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingShipment) return;
-    
     const isNew = !shipments.find(s => s.id === editingShipment.id);
-    let updatedShipments: Shipment[];
-
-    if (!isNew) {
-      updatedShipments = shipments.map(s => s.id === editingShipment.id ? { ...editingShipment, lastUpdate: new Date().toLocaleString() } : s);
-    } else {
-      updatedShipments = [...shipments, { ...editingShipment, lastUpdate: new Date().toLocaleString() }];
-    }
-    
-    setShipments(updatedShipments);
-    localStorage.setItem('dr_shipments', JSON.stringify(updatedShipments));
-    setEditingShipment(null);
-  };
-
-  const deleteShipment = (id: string) => {
-    if (!confirm('Delete this shipment record?')) return;
-    const updated = shipments.filter(s => s.id !== id);
+    const updated = isNew 
+      ? [...shipments, { ...editingShipment, lastUpdate: new Date().toLocaleString() }] 
+      : shipments.map(s => s.id === editingShipment.id ? { ...editingShipment, lastUpdate: new Date().toLocaleString() } : s);
     setShipments(updated);
-    localStorage.setItem('dr_shipments', JSON.stringify(updated));
-  };
-
-  const updateInquiryStatus = (id: number, status: Inquiry['status']) => {
-    const updated = inquiries.map(q => q.id === id ? { ...q, status } : q);
-    setInquiries(updated);
-    localStorage.setItem('dr_inquiries', JSON.stringify(updated));
-  };
-
-  const deleteInquiry = (id: number) => {
-    if (!confirm('Are you sure you want to delete this inquiry?')) return;
-    const updated = inquiries.filter(q => q.id !== id);
-    setInquiries(updated);
-    localStorage.setItem('dr_inquiries', JSON.stringify(updated));
+    setEditingShipment(null);
   };
 
   const handleSaveService = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingService) return;
-    const updated = services.find(s => s.id === editingService.id) 
-      ? services.map(s => s.id === editingService.id ? editingService : s)
-      : [...services, editingService];
+    const isNew = !services.find(s => s.id === editingService.id);
+    const updated = isNew ? [...services, editingService] : services.map(s => s.id === editingService.id ? editingService : s);
     setServices(updated);
-    localStorage.setItem('dr_services', JSON.stringify(updated));
     setEditingService(null);
   };
 
-  const deleteService = (id: string) => {
-    if (!confirm('Delete this service permanently?')) return;
-    const updated = services.filter(s => s.id !== id);
-    setServices(updated);
-    localStorage.setItem('dr_services', JSON.stringify(updated));
-  };
-
-  const toggleTestimonial = (id: string) => {
-    const updated = testimonials.map(t => t.id === id ? { ...t, approved: !t.approved } : t);
+  const handleSaveTestimonial = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTestimonial) return;
+    const isNew = !testimonials.find(t => t.id === editingTestimonial.id);
+    const updated = isNew ? [...testimonials, editingTestimonial] : testimonials.map(t => t.id === editingTestimonial.id ? editingTestimonial : t);
     setTestimonials(updated);
-    localStorage.setItem('dr_testimonials', JSON.stringify(updated));
+    setEditingTestimonial(null);
   };
 
-  const deleteTestimonial = (id: string) => {
-    if (!confirm('Delete this review?')) return;
-    const updated = testimonials.filter(t => t.id !== id);
-    setTestimonials(updated);
-    localStorage.setItem('dr_testimonials', JSON.stringify(updated));
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, key: keyof SiteAssets) => {
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const newAssets = { ...assets, [key]: reader.result as string };
-        setAssets(newAssets);
-        localStorage.setItem('dr_assets', JSON.stringify(newAssets));
+        setCompanyDetails({ ...companyDetails, logo: reader.result as string });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleCompanyDetailChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setCompanyDetails({
-      ...companyDetails,
-      [name]: name === 'estd' ? parseInt(value) || 2017 : value
-    });
+  const handleAssetUpload = (e: React.ChangeEvent<HTMLInputElement>, key: keyof SiteAssets) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAssets({ ...assets, [key]: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans">
-        <div className="bg-white p-10 rounded-[32px] shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-500">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-slate-950 rounded-2xl flex items-center justify-center text-amber-500 mx-auto mb-4 shadow-xl">
-              <Settings size={32} />
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-md animate-in fade-in zoom-in duration-500">
+          <div className="text-center mb-10">
+            <div className="w-20 h-20 bg-slate-950 rounded-3xl flex items-center justify-center text-amber-500 mx-auto mb-6 shadow-2xl">
+              <Settings size={40} />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Faridabad Admin</h1>
-            <p className="text-slate-400 text-sm mt-1 uppercase tracking-widest font-bold">Secure Access Only</p>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">Admin Gateway</h1>
+            <p className="text-slate-400 text-xs mt-2 uppercase tracking-widest font-black">Authorized Personnel Only</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block px-1">Passkey Credentials</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-6 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none transition-all font-mono text-center tracking-[0.5em] bg-slate-50"
-                placeholder="••••••••"
-                autoFocus
-              />
-            </div>
-            <button className="w-full bg-slate-950 text-white py-4 rounded-xl font-bold hover:bg-black transition-all active:scale-95 shadow-lg shadow-slate-950/20 uppercase tracking-widest text-sm">
-              Authorize Entry
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-6 py-5 rounded-2xl border-2 border-slate-100 focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 outline-none transition-all font-mono text-center tracking-[0.5em] bg-slate-50 text-xl font-bold"
+              placeholder="••••••••"
+              autoFocus
+            />
+            <button className="w-full bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-xl">
+              Authenticate Entry
             </button>
-            <button type="button" onClick={onClose} className="w-full text-slate-400 text-xs font-black uppercase tracking-widest hover:text-slate-950 transition-colors">Return to Site</button>
+            <button type="button" onClick={onClose} className="w-full text-slate-400 text-xs font-black uppercase tracking-widest hover:text-slate-950 transition-colors py-4">Return to Site</button>
           </form>
         </div>
       </div>
@@ -201,386 +163,303 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
-      {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex w-72 bg-white border-r border-slate-200 flex-col shrink-0 sticky top-0 h-screen overflow-y-auto z-50">
-        <div className="p-8">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-8 h-8 bg-slate-950 rounded-lg flex items-center justify-center text-amber-500 shadow-md">
-              <Package size={16} />
+    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row font-sans relative overflow-hidden">
+      {/* Sidebar */}
+      <aside className="hidden lg:flex w-72 bg-white border-r border-slate-200 flex-col shrink-0 sticky top-0 h-screen z-50 shadow-sm">
+        <div className="p-8 flex flex-col h-full">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center text-amber-500">
+              <Package size={20} />
             </div>
-            <span className="text-sm font-black tracking-tighter uppercase text-slate-950">Deluxe<span className="text-amber-500">Admin</span></span>
+            <span className="text-lg font-black uppercase text-slate-950">Deluxe<br/><span className="text-amber-500 text-xs">Operations</span></span>
           </div>
-          
-          <nav className="space-y-1.5">
+          <nav className="space-y-1.5 flex-1">
             {[
-              { id: 'dashboard', icon: LayoutDashboard, label: 'Control Center' },
-              { id: 'inquiries', icon: Inbox, label: 'Client Inquiries', count: inquiries.filter(i => i.status === 'new').length },
-              { id: 'shipments', icon: MapPin, label: 'Tracking Hub' },
+              { id: 'dashboard', icon: LayoutDashboard, label: 'Analytics' },
+              { id: 'inquiries', icon: Inbox, label: 'Inquiry Inbox', count: inquiries.filter(i => i.status === 'new').length },
+              { id: 'shipments', icon: MapPin, label: 'Consignment Hub' },
               { id: 'services', icon: Truck, label: 'Fleet Management' },
-              { id: 'testimonials', icon: Users, label: 'Testimonials' },
-              { id: 'assets', icon: ImageIcon, label: 'Visual Assets' },
+              { id: 'testimonials', icon: Users, label: 'Client Feedback', count: testimonials.filter(t => !t.approved).length },
+              { id: 'assets', icon: ImageIcon, label: 'Media Assets' },
               { id: 'settings', icon: Settings, label: 'Global Settings' }
             ].map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
-                className={`w-full flex items-center justify-between p-3.5 rounded-xl font-bold text-sm transition-all group ${activeTab === item.id ? 'bg-slate-950 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'}`}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all ${activeTab === item.id ? 'bg-slate-950 text-white shadow-xl' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'}`}
               >
-                <div className="flex items-center gap-3">
-                  <item.icon size={18} className={activeTab === item.id ? 'text-amber-500' : 'text-slate-300 group-hover:text-slate-950'} />
+                <div className="flex items-center gap-4">
+                  <item.icon size={18} className={activeTab === item.id ? 'text-amber-500' : 'text-slate-300'} />
                   <span>{item.label}</span>
                 </div>
-                {item.count ? <span className="bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-black">{item.count}</span> : null}
+                {item.count ? <span className="bg-amber-500 text-slate-950 px-2 py-0.5 rounded-lg text-[9px] font-black">{item.count}</span> : null}
               </button>
             ))}
           </nav>
-        </div>
-
-        <div className="mt-auto p-8 border-t border-slate-100">
-          <button onClick={onClose} className="w-full flex items-center gap-3 text-slate-400 font-bold text-sm hover:text-red-500 transition-colors group">
-            <LogOut size={18} className="group-hover:translate-x-1 transition-transform" />
-            <span>Terminate Session</span>
+          <button onClick={onClose} className="w-full flex items-center gap-4 text-slate-400 font-black text-xs uppercase hover:text-red-500 mt-10">
+            <LogOut size={18} /> <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
-      {/* Mobile Topbar */}
-      <div className="lg:hidden bg-white border-b border-slate-200 p-4 px-6 flex justify-between items-center sticky top-0 z-[100] shadow-sm">
-        <div className="flex items-center gap-2">
-          <Package size={20} className="text-amber-500" />
-          <span className="text-xs font-black tracking-tighter uppercase">Deluxe<span className="text-amber-500">Admin</span></span>
-        </div>
-        <button onClick={onClose} className="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-lg"><LogOut size={20} /></button>
-      </div>
-
-      {/* Mobile Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around p-3 z-[100] shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-        {[
-          { id: 'dashboard', icon: LayoutDashboard },
-          { id: 'inquiries', icon: Inbox },
-          { id: 'shipments', icon: MapPin },
-          { id: 'settings', icon: Settings }
-        ].map(item => (
-          <button 
-            key={item.id} 
-            onClick={() => setActiveTab(item.id as any)}
-            className={`p-3.5 rounded-2xl transition-all ${activeTab === item.id ? 'bg-slate-950 text-white scale-110 shadow-lg' : 'text-slate-400'}`}
-          >
-            <item.icon size={20} />
-          </button>
-        ))}
-      </div>
-
-      {/* Main Content Area */}
-      <main className="flex-1 min-h-screen overflow-y-auto p-6 md:p-12 pb-24 lg:pb-12">
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 md:mb-16 gap-6">
+      {/* Main Area */}
+      <main className="flex-1 min-h-screen overflow-y-auto p-6 md:p-14 pb-32">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-8">
           <div>
-            <div className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] mb-2">Faridabad Operating Hub</div>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-950 tracking-tight capitalize">{activeTab.replace('-', ' ')}</h2>
+            <div className="text-[10px] font-black text-amber-500 uppercase tracking-[0.4em] mb-3">Faridabad Headquarters</div>
+            <h2 className="text-4xl md:text-6xl font-black text-slate-950 tracking-tighter capitalize leading-none">{activeTab.replace('-', ' ')}</h2>
           </div>
           {activeTab === 'shipments' && (
-             <button 
-             onClick={() => setEditingShipment({ 
-               id: Date.now().toString(), 
-               trackingNumber: generateYearlyTrackingId(), 
-               sender: '', 
-               receiver: '', 
-               origin: 'Faridabad, HR', 
-               destination: '', 
-               currentLocation: 'Faridabad Hub',
-               status: 'dispatched', 
-               lastUpdate: new Date().toLocaleString(),
-               estimatedDelivery: '3-5 Business Days',
-               description: 'Consignment booked at Faridabad Hub. Scheduled for departure.'
-             })}
-             className="w-full md:w-auto bg-slate-950 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-black transition-all active:scale-95 text-xs shadow-xl shadow-slate-950/20"
-           >
-             <Plus size={20} className="text-amber-500" /> New Consignment
-           </button>
+            <button onClick={() => setEditingShipment({ id: Date.now().toString(), trackingNumber: generateYearlyTrackingId(), sender: '', receiver: '', origin: 'Faridabad, HR', destination: '', currentLocation: 'Faridabad Hub', status: 'dispatched', lastUpdate: new Date().toLocaleString(), estimatedDelivery: '3-5 Working Days', description: 'Consignment booked. Scheduled for dispatch.' })} className="btn-primary gap-3 shadow-xl shadow-slate-950/20"><Plus size={20} /> New Consignment</button>
+          )}
+          {activeTab === 'services' && (
+            <button onClick={() => setEditingService({ id: Date.now().toString(), title: '', description: '', icon: 'truck', image: '' })} className="btn-primary gap-3 shadow-xl shadow-slate-950/20"><Plus size={20} /> Add Service</button>
+          )}
+          {activeTab === 'testimonials' && (
+            <button onClick={() => setEditingTestimonial({ id: Date.now().toString(), name: '', company: '', role: 'Client', quote: '', rating: 5, approved: true })} className="btn-primary gap-3 shadow-xl shadow-slate-950/20"><Plus size={20} /> New Feedback</button>
           )}
         </header>
 
-        {/* SHIPMENTS TAB */}
-        {activeTab === 'shipments' && (
-          <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Desktop List */}
-            <div className="hidden md:block bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50 border-b border-slate-100">
-                  <tr>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tracking ID</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Position</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Route</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Admin</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {shipments.map((s) => (
-                    <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-8 py-6">
-                        <div className="font-black text-slate-950">{s.trackingNumber}</div>
-                        <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">To: {s.receiver}</div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                          <Navigation size={14} className="text-amber-500" />
-                          {s.currentLocation}
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                          {s.origin.split(',')[0]} <ArrowRight size={12} className="text-slate-300" /> {s.destination.split(',')[0] || '?'}
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                          s.status === 'delivered' ? 'bg-green-100 text-green-600' : 
-                          s.status === 'in-transit' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'
-                        }`}>{s.status}</span>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => setEditingShipment(s)} className="p-2 text-slate-400 hover:text-slate-950 hover:bg-white rounded-lg border border-transparent hover:border-slate-200 shadow-sm transition-all"><Edit size={18} /></button>
-                          <button onClick={() => deleteShipment(s.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-white rounded-lg border border-transparent hover:border-red-100 shadow-sm transition-all"><Trash2 size={18} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {shipments.length === 0 && (
-                    <tr><td colSpan={5} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No active shipments found</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="md:hidden space-y-4">
-              {shipments.map((s) => (
-                <div key={s.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="text-lg font-black text-slate-950 tracking-tight">{s.trackingNumber}</div>
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">To: {s.receiver}</div>
-                    </div>
-                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
-                      s.status === 'delivered' ? 'bg-green-100 text-green-600' : 
-                      s.status === 'in-transit' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'
-                    }`}>{s.status}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm font-bold text-slate-800 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <Navigation size={18} className="text-amber-500" />
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Last Location</span>
-                      {s.currentLocation}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-4 pt-2">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                      <span>{s.origin.split(',')[0]}</span>
-                      <ArrowRight size={14} className="text-amber-500" />
-                      <span>{s.destination.split(',')[0] || '?'}</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => setEditingShipment(s)} className="p-3 bg-slate-50 rounded-xl text-slate-600 border border-slate-100 active:scale-90"><Edit size={18} /></button>
-                      <button onClick={() => deleteShipment(s.id)} className="p-3 bg-red-50 rounded-xl text-red-500 border border-red-100 active:scale-90"><Trash2 size={18} /></button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Edit/New Shipment Modal */}
-            {editingShipment && (
-              <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[500] flex items-center justify-center p-0 md:p-6">
-                <div className="bg-white w-full h-full md:h-auto md:max-w-3xl md:rounded-[40px] shadow-2xl relative overflow-hidden flex flex-col animate-in slide-in-from-bottom-20 duration-500">
-                   {/* Modal Header */}
-                   <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-20">
-                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center text-amber-500">
-                          <Package size={20} />
-                        </div>
-                        <div>
-                          <h3 className="text-xl md:text-2xl font-black text-slate-950 tracking-tight">Consignment Editor</h3>
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Update Real-time Tracking Data</p>
-                        </div>
-                     </div>
-                     <button onClick={() => setEditingShipment(null)} className="p-2 text-slate-400 hover:text-slate-950 hover:bg-slate-50 rounded-full transition-all"><X size={24} /></button>
-                   </div>
-                   
-                   {/* Modal Body */}
-                   <div className="flex-1 overflow-y-auto p-6 md:p-10">
-                     <form id="shipment-form" onSubmit={handleSaveShipment} className="space-y-8">
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tracking ID (Generated)</label>
-                           <input required value={editingShipment.trackingNumber} onChange={e => setEditingShipment({...editingShipment, trackingNumber: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-mono font-black text-slate-950 focus:border-amber-500 transition-all" />
-                         </div>
-                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Delivery Phase</label>
-                           <select value={editingShipment.status} onChange={e => setEditingShipment({...editingShipment, status: e.target.value as ShipmentStatus})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-slate-950 uppercase tracking-widest text-xs focus:border-amber-500 transition-all cursor-pointer">
-                              <option value="dispatched">Dispatched</option>
-                              <option value="in-transit">In Transit</option>
-                              <option value="near-destination">Near Destination Hub</option>
-                              <option value="delivered">Delivered</option>
-                           </select>
-                         </div>
-                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Current GPS Loc.</label>
-                           <input required value={editingShipment.currentLocation} onChange={e => setEditingShipment({...editingShipment, currentLocation: e.target.value})} className="w-full px-5 py-4 bg-amber-50/50 border border-amber-100 rounded-2xl outline-none font-bold text-slate-950 focus:border-amber-500 transition-all" placeholder="e.g. Jaipur Sorting Hub" />
-                         </div>
-                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Target Delivery Date</label>
-                           <input required value={editingShipment.estimatedDelivery} onChange={e => setEditingShipment({...editingShipment, estimatedDelivery: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-slate-950 focus:border-amber-500 transition-all" />
-                         </div>
-                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Pickup Point</label>
-                           <input required value={editingShipment.origin} onChange={e => setEditingShipment({...editingShipment, origin: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-slate-950 focus:border-amber-500 transition-all" />
-                         </div>
-                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Drop Point</label>
-                           <input required value={editingShipment.destination} onChange={e => setEditingShipment({...editingShipment, destination: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-slate-950 focus:border-amber-500 transition-all" />
-                         </div>
-                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Consignor (Sender)</label>
-                           <input required value={editingShipment.sender} onChange={e => setEditingShipment({...editingShipment, sender: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-slate-950 focus:border-amber-500 transition-all" />
-                         </div>
-                         <div className="space-y-2">
-                           <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Consignee (Receiver)</label>
-                           <input required value={editingShipment.receiver} onChange={e => setEditingShipment({...editingShipment, receiver: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-slate-950 focus:border-amber-500 transition-all" />
-                         </div>
-                       </div>
-                       <div className="space-y-2 pb-6">
-                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Internal Log Update (Client Facing)</label>
-                         <textarea required rows={3} value={editingShipment.description} onChange={e => setEditingShipment({...editingShipment, description: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none resize-none font-bold text-slate-950 text-sm focus:border-amber-500 transition-all italic" placeholder="e.g. Consignment successfully arrived at Mumbai Port. Customs clearance in progress." />
-                       </div>
-                     </form>
-                   </div>
-
-                   {/* Modal Footer */}
-                   <div className="p-6 md:p-8 border-t border-slate-100 bg-slate-50 sticky bottom-0 z-20">
-                     <div className="flex flex-col md:flex-row gap-3">
-                       <button 
-                         type="submit" 
-                         form="shipment-form"
-                         className="flex-1 bg-slate-950 text-white py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-xl shadow-slate-950/20 text-xs md:text-sm flex items-center justify-center gap-3"
-                       >
-                         <SaveIcon size={20} className="text-amber-500" /> Commit Tracking Update
-                       </button>
-                       <button 
-                         type="button"
-                         onClick={() => setEditingShipment(null)}
-                         className="px-8 py-4 md:py-5 bg-white border border-slate-200 text-slate-400 rounded-2xl font-black uppercase tracking-widest hover:text-slate-950 transition-all text-[10px] md:text-xs"
-                       >
-                         Discard Changes
-                       </button>
-                     </div>
-                   </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* DASHBOARD TAB */}
+        {/* Dashboard View */}
         {activeTab === 'dashboard' && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8 animate-in fade-in duration-700">
             {[
               { label: 'Unread Inquiries', value: inquiries.filter(i => i.status === 'new').length, icon: Inbox, color: 'text-blue-500', bg: 'bg-blue-50' },
-              { label: 'Active Shipments', value: shipments.filter(s => s.status !== 'delivered').length, icon: MapPin, color: 'text-amber-500', bg: 'bg-amber-50' },
+              { label: 'Live Shipments', value: shipments.filter(s => s.status !== 'delivered').length, icon: MapPin, color: 'text-amber-500', bg: 'bg-amber-50' },
               { label: 'Fleet Options', value: services.length, icon: Truck, color: 'text-purple-500', bg: 'bg-purple-50' },
-              { label: 'Reviews', value: testimonials.length, icon: Users, color: 'text-green-500', bg: 'bg-green-50' }
+              { label: 'Total Reviews', value: testimonials.length, icon: Users, color: 'text-green-500', bg: 'bg-green-50' }
             ].map((stat, i) => (
-              <div key={i} className="bg-white p-6 md:p-10 rounded-[32px] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-                <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl ${stat.bg} flex items-center justify-center mb-6 transition-transform group-hover:scale-110`}>
-                  <stat.icon size={24} md:size={32} className={stat.color} />
+              <div key={i} className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
+                <div className={`w-16 h-16 rounded-[24px] ${stat.bg} flex items-center justify-center mb-8 transition-transform group-hover:scale-110`}>
+                  <stat.icon size={30} className={stat.color} />
                 </div>
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</div>
-                <div className="text-3xl md:text-5xl font-black text-slate-950 tracking-tight">{stat.value}</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">{stat.label}</div>
+                <div className="text-4xl md:text-5xl font-black text-slate-950 tracking-tighter">{stat.value}</div>
               </div>
             ))}
           </div>
         )}
 
-        {/* OTHER TABS (Simplified for this update) */}
-        {activeTab === 'inquiries' && (
-          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left min-w-[700px]">
-                <thead className="bg-slate-50 border-b border-slate-100">
-                  <tr>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Client Identity</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Requirement</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Lifecycle</th>
-                    <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Moderation</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {inquiries.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-8 py-6">
-                        <div className="font-bold text-slate-950">{item.name}</div>
-                        <div className="text-xs text-slate-400 font-bold">{item.phone}</div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="text-sm text-slate-600 line-clamp-1 italic">"{item.notes}"</div>
-                        <div className="text-[10px] font-black text-amber-500 uppercase tracking-widest mt-1.5">{item.service}</div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest ${item.status === 'new' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>{item.status}</span>
-                      </td>
-                      <td className="px-8 py-6 text-right space-x-2">
-                        <button onClick={() => updateInquiryStatus(item.id, 'resolved')} className="p-2.5 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all" title="Mark Resolved"><CheckCircle2 size={18} /></button>
-                        <button onClick={() => deleteInquiry(item.id)} className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Delete Inquiry"><Trash2 size={18} /></button>
-                      </td>
-                    </tr>
+        {/* Fleet Management View */}
+        {activeTab === 'services' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 animate-in fade-in">
+            {services.map(s => (
+              <div key={s.id} className="bg-white p-6 rounded-[32px] border border-slate-200 flex flex-col group">
+                <div className="aspect-video bg-slate-50 rounded-2xl mb-6 overflow-hidden">
+                  {s.image ? <img src={s.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform" /> : <div className="w-full h-full flex items-center justify-center text-slate-200"><Truck size={40} /></div>}
+                </div>
+                <h4 className="font-black text-lg text-slate-900 mb-2">{s.title}</h4>
+                <p className="text-sm text-slate-500 mb-8 line-clamp-2">{s.description}</p>
+                <div className="mt-auto flex gap-3 pt-6 border-t border-slate-50">
+                  <button onClick={() => setEditingService(s)} className="flex-1 py-3 bg-slate-50 text-slate-900 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-100"><Edit size={16} /> Edit</button>
+                  <button onClick={() => setServices(services.filter(serv => serv.id !== s.id))} className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100"><Trash2 size={16} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Testimonials View */}
+        {activeTab === 'testimonials' && (
+          <div className="space-y-12 animate-in fade-in">
+            {testimonials.filter(t => !t.approved).length > 0 && (
+              <div className="space-y-6">
+                <h4 className="text-xs font-black uppercase tracking-[0.3em] text-amber-500">Inbox (Pending Approval)</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {testimonials.filter(t => !t.approved).map(t => (
+                    <div key={t.id} className="bg-amber-50/50 p-6 rounded-[32px] border border-amber-100 shadow-sm">
+                      <p className="italic text-slate-700 mb-6 text-sm">"{t.quote}"</p>
+                      <div className="font-bold text-slate-900">{t.name}</div>
+                      <div className="text-[10px] text-slate-400 uppercase font-black">{t.company}</div>
+                      <div className="mt-6 flex gap-3 pt-4 border-t border-amber-100">
+                        <button onClick={() => setTestimonials(testimonials.map(item => item.id === t.id ? { ...item, approved: true } : item))} className="flex-1 bg-slate-950 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">Approve</button>
+                        <button onClick={() => setTestimonials(testimonials.filter(item => item.id !== t.id))} className="px-4 bg-red-50 text-red-500 rounded-xl"><X size={16} /></button>
+                      </div>
+                    </div>
                   ))}
-                  {inquiries.length === 0 && (
-                    <tr><td colSpan={4} className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No customer inquiries found</td></tr>
-                  )}
-                </tbody>
-              </table>
+                </div>
+              </div>
+            )}
+            <div className="space-y-6">
+              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Approved Feedbacks</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {testimonials.filter(t => t.approved).map(t => (
+                  <div key={t.id} className="bg-white p-6 rounded-[32px] border border-slate-200 group">
+                    <p className="italic text-slate-700 mb-6 text-sm">"{t.quote}"</p>
+                    <div className="font-bold text-slate-900">{t.name}</div>
+                    <div className="text-[10px] text-slate-400 uppercase font-black">{t.company}</div>
+                    <div className="mt-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => setEditingTestimonial(t)} className="p-2 text-slate-400 hover:text-slate-950"><Edit size={16} /></button>
+                      <button onClick={() => setTestimonials(testimonials.filter(item => item.id !== t.id))} className="p-2 text-slate-400 hover:text-red-500"><Trash2 size={16} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* SETTINGS TAB */}
+        {/* Settings View */}
         {activeTab === 'settings' && (
-          <div className="bg-white p-6 md:p-12 rounded-[40px] border border-slate-200 shadow-sm animate-in fade-in duration-500 max-w-5xl">
-            <h3 className="text-2xl font-black text-slate-950 mb-10 tracking-tight">Business Profile & Credentials</h3>
-            <form className="space-y-10" onSubmit={e => {
-              e.preventDefault();
-              localStorage.setItem('dr_company_details', JSON.stringify(companyDetails));
-              alert('Business profile updated securely.');
-            }}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {[
-                  { name: 'name', label: 'Company Registered Name' },
-                  { name: 'ceo', label: 'Proprietor / CEO' },
-                  { name: 'phone', label: 'Corporate Hotline' },
-                  { name: 'email', label: 'Official Correspondence Email' },
-                  { name: 'gst', label: 'GST Identification Number' },
-                  { name: 'location', label: 'Headquarters Base' }
-                ].map(field => (
-                  <div key={field.name} className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">{field.label}</label>
-                    <input name={field.name} value={companyDetails[field.name as keyof CompanyDetails]} onChange={handleCompanyDetailChange} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-slate-950 focus:border-amber-500 transition-all" />
+          <div className="bg-white p-10 md:p-14 rounded-[40px] border border-slate-200 shadow-sm max-w-5xl">
+            <h3 className="text-3xl font-black text-slate-950 mb-12 tracking-tight">Business Configuration</h3>
+            <form className="space-y-12" onSubmit={e => { e.preventDefault(); alert('Settings saved successfully!'); }}>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Company Identity</label>
+                  <input value={companyDetails.name} onChange={e => setCompanyDetails({ ...companyDetails, name: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none font-bold" placeholder="Company Name" />
+                  <div className="flex items-center gap-4 mt-2">
+                    {companyDetails.logo && <img src={companyDetails.logo} className="w-12 h-12 object-contain rounded bg-slate-100" />}
+                    <label className="flex-1 py-3 px-6 bg-slate-950 text-white rounded-xl text-[10px] font-black text-center cursor-pointer uppercase tracking-widest">Update Logo <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} /></label>
                   </div>
-                ))}
+                </div>
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Leadership</label>
+                  <input value={companyDetails.ceo} onChange={e => setCompanyDetails({ ...companyDetails, ceo: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none font-bold" placeholder="Proprietor Name" />
+                  <input value={companyDetails.estd} onChange={e => setCompanyDetails({ ...companyDetails, estd: parseInt(e.target.value) || 2017 })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none font-bold" placeholder="Established Year" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Registered Office Address</label>
-                <textarea name="address" rows={3} value={companyDetails.address} onChange={handleCompanyDetailChange} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none resize-none font-bold text-slate-950 text-sm focus:border-amber-500 transition-all" />
+
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">About Section Content</label>
+                <textarea value={companyDetails.aboutText} onChange={e => setCompanyDetails({ ...companyDetails, aboutText: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none font-medium h-32 resize-none" placeholder="Enter company history, mission, and vision details..." />
               </div>
-              <div className="pt-6 border-t border-slate-100">
-                <button type="submit" className="w-full md:w-auto bg-slate-950 text-white px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-xl shadow-slate-950/20 text-xs flex items-center justify-center gap-3">
-                  <Save size={18} className="text-amber-500" /> Commit Global Settings
-                </button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-6">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Link size={14}/> Social Media Handles</label>
+                  {[
+                    { plat: 'facebook', icon: Facebook },
+                    { plat: 'linkedin', icon: Linkedin },
+                    { plat: 'instagram', icon: Instagram }
+                  ].map(social => (
+                    <div key={social.plat} className="flex items-center gap-3">
+                      <social.icon size={20} className="text-slate-400" />
+                      <input 
+                        value={companyDetails.socialLinks?.find(l => l.platform === social.plat)?.url || ''} 
+                        onChange={e => {
+                          const links = [...(companyDetails.socialLinks || [])];
+                          const idx = links.findIndex(l => l.platform === social.plat);
+                          if(idx > -1) links[idx].url = e.target.value;
+                          else links.push({ platform: social.plat as any, url: e.target.value });
+                          setCompanyDetails({...companyDetails, socialLinks: links});
+                        }}
+                        className="flex-1 px-4 py-2 bg-slate-50 rounded-xl outline-none text-sm font-bold" 
+                        placeholder={`${social.plat.charAt(0).toUpperCase() + social.plat.slice(1)} URL`} 
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-6">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Settings size={14}/> Footer Quick Links</label>
+                  {(companyDetails.footerLinks || [{label: 'Privacy Policy', url: '#'}, {label: 'Terms of Service', url: '#'}]).map((link, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input value={link.label} className="w-1/3 px-4 py-2 bg-slate-50 rounded-xl outline-none text-[10px] font-black uppercase tracking-widest" placeholder="Label" />
+                      <input value={link.url} className="flex-1 px-4 py-2 bg-slate-50 rounded-xl outline-none text-xs font-bold" placeholder="URL" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-10 border-t border-slate-100 flex justify-end">
+                <button type="submit" className="bg-slate-950 text-white px-14 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black shadow-xl flex items-center gap-3"><Save size={18} className="text-amber-500" /> Save Operations Settings</button>
               </div>
             </form>
           </div>
         )}
+
+        {/* Visual Assets View */}
+        {activeTab === 'assets' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 animate-in fade-in">
+            {[
+              { key: 'heroImage', label: 'Main Landing Banner', desc: 'First impression visual for visitors.' },
+              { key: 'aboutImage', label: 'Heritage Visual', desc: 'Used in the About company section.' }
+            ].map(item => (
+              <div key={item.key} className="bg-white p-8 rounded-[40px] border border-slate-200">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h4 className="font-black text-slate-950">{item.label}</h4>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{item.desc}</p>
+                  </div>
+                  <label className="bg-slate-950 text-white p-3 rounded-xl cursor-pointer hover:bg-black transition-all">
+                    <Upload size={18} />
+                    <input type="file" accept="image/*" className="hidden" onChange={e => handleAssetUpload(e, item.key as any)} />
+                  </label>
+                </div>
+                <div className="aspect-video bg-slate-50 rounded-2xl overflow-hidden border">
+                  <img src={assets[item.key as keyof SiteAssets]} className="w-full h-full object-cover" alt="" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Modals with Scroll and Sticky Footers */}
+        {editingService && (
+          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[500] flex items-center justify-center p-0 md:p-6 lg:p-12">
+            <div className="bg-white w-full h-full md:h-auto md:max-h-[90vh] md:max-w-4xl md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-20">
+              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-20 shrink-0">
+                <h3 className="text-2xl font-black text-slate-950 tracking-tight">Service Configuration</h3>
+                <button onClick={() => setEditingService(null)} className="p-2 text-slate-400 hover:text-slate-950 rounded-full transition-all"><X size={32} /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 lg:p-12">
+                <form id="service-form" onSubmit={handleSaveService} className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Service Title</label>
+                      <input required value={editingService.title} onChange={e => setEditingService({...editingService, title: e.target.value})} className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none font-bold focus:border-amber-500 transition-all" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Icon Style</label>
+                      <select value={editingService.icon} onChange={e => setEditingService({...editingService, icon: e.target.value})} className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none font-black uppercase tracking-widest text-[11px] focus:border-amber-500 transition-all">
+                        <option value="truck">General Trucking</option>
+                        <option value="thermometer">Refrigerated</option>
+                        <option value="trash-2">Waste Logistics</option>
+                        <option value="box">Box Truck</option>
+                        <option value="zap">Express Delivery</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Feature Image (URL or Upload)</label>
+                    <div className="flex gap-4 items-center">
+                      <input value={editingService.image} onChange={e => setEditingService({...editingService, image: e.target.value})} className="flex-1 px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none font-bold text-sm" placeholder="Image URL..." />
+                      <label className="p-5 bg-slate-950 text-white rounded-2xl cursor-pointer hover:bg-black transition-all shadow-xl"><Upload size={20}/><input type="file" className="hidden" accept="image/*" onChange={e => {
+                        const file = e.target.files?.[0];
+                        if(file){
+                          const reader = new FileReader();
+                          reader.onloadend = () => setEditingService({...editingService, image: reader.result as string});
+                          reader.readAsDataURL(file);
+                        }
+                      }}/></label>
+                    </div>
+                    {editingService.image && <img src={editingService.image} className="w-32 h-20 object-cover rounded-xl mt-4 border shadow-sm" />}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Detailed Description</label>
+                    <textarea required rows={4} value={editingService.description} onChange={e => setEditingService({...editingService, description: e.target.value})} className="w-full px-8 py-6 bg-slate-50 border-2 border-slate-100 rounded-[32px] outline-none font-bold text-sm focus:border-amber-500 transition-all italic leading-relaxed" placeholder="Market-ready service summary..." />
+                  </div>
+                </form>
+              </div>
+              <div className="p-6 md:p-10 border-t border-slate-100 bg-slate-50/80 backdrop-blur-md sticky bottom-0 z-40 shrink-0">
+                <div className="flex gap-4 max-w-xl mx-auto">
+                  <button type="submit" form="service-form" className="flex-[3] bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3"><SaveIcon size={20} className="text-amber-500" /> Save Fleet Option</button>
+                  <button type="button" onClick={() => setEditingService(null)} className="flex-1 bg-white border-2 border-slate-200 text-slate-400 rounded-2xl font-black uppercase tracking-widest text-[11px]">Discard</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Generic Loader and Empty States */}
+        {activeTab === 'inquiries' && inquiries.length === 0 && (
+          <div className="py-40 flex flex-col items-center justify-center text-slate-300">
+            <Inbox size={64} className="mb-6 opacity-20" />
+            <span className="font-black uppercase tracking-[0.4em] text-xs">Lead desk is currently clear</span>
+          </div>
+        )}
+
       </main>
     </div>
   );

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Quote, Star, ChevronLeft, ChevronRight, Plus, X, Send } from 'lucide-react';
 import { Testimonial } from '../types.ts';
 
@@ -14,6 +14,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [newReview, setNewReview] = useState({ name: '', company: '', quote: '', rating: 5 });
+  const intervalRef = useRef<number | null>(null);
 
   const approvedTestimonials = testimonials.filter(t => t.approved);
 
@@ -33,9 +34,11 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
 
   useEffect(() => {
     if (approvedTestimonials.length > 1 && !isPaused) {
-      const timer = setInterval(handleNext, 3000);
-      return () => clearInterval(timer);
+      intervalRef.current = window.setInterval(handleNext, 3000);
+    } else {
+      if(intervalRef.current) clearInterval(intervalRef.current);
     }
+    return () => { if(intervalRef.current) clearInterval(intervalRef.current); };
   }, [handleNext, approvedTestimonials.length, isPaused]);
 
   const handleSubmitReview = (e: React.FormEvent) => {
@@ -49,41 +52,44 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
     setTestimonials([...testimonials, testimonial]);
     setIsModalOpen(false);
     setNewReview({ name: '', company: '', quote: '', rating: 5 });
-    alert('Thank you! Your testimonial has been submitted for review.');
+    alert('Thank you! Your feedback has been sent for administrative review.');
   };
 
   if (approvedTestimonials.length === 0) return null;
 
   return (
-    <section id="testimonials" className="section-padding bg-slate-50 overflow-hidden px-4">
+    <section 
+      id="testimonials" 
+      className="section-padding bg-slate-50 overflow-hidden px-4"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+    >
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10 md:mb-16 relative">
-          <h2 className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-amber-600 mb-4 md:mb-6">Client Success</h2>
+          <h2 className="text-[10px] md:text-sm font-bold uppercase tracking-widest text-amber-600 mb-4 md:mb-6">Corporate Excellence</h2>
           <h3 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Trusted by Industry Leaders.
+            The Choice of <br/><span className="text-slate-400">Industry Leaders.</span>
           </h3>
           <p className="text-slate-500 mt-4 md:text-lg font-medium max-w-2xl mx-auto">
-            Businesses across India rely on Deluxe Roadways for their critical logistics requirements.
+            Experience reliable logistics through the eyes of our prominent industrial partners.
           </p>
           <button 
             onClick={() => setIsModalOpen(true)}
             className="mt-8 flex items-center gap-2 mx-auto text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 transition-colors group"
           >
-            <Plus size={16} className="group-hover:rotate-90 transition-transform" /> Write a Review
+            <Plus size={16} className="group-hover:rotate-90 transition-transform" /> Submit Your Review
           </button>
         </div>
 
         <div className="relative max-w-4xl mx-auto">
           {/* Main Carousel Card */}
           <div 
-            className="relative bg-white p-6 md:p-16 rounded-[32px] md:rounded-[40px] border border-slate-200 shadow-xl overflow-hidden min-h-[360px] md:min-h-[400px] flex flex-col justify-center cursor-pointer"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
-            onTouchStart={() => setIsPaused(true)}
-            onTouchEnd={() => setIsPaused(false)}
+            className={`relative bg-white p-6 md:p-16 rounded-[32px] md:rounded-[40px] border-2 transition-all duration-300 ${isPaused ? 'border-amber-400 shadow-2xl scale-[1.02]' : 'border-slate-100 shadow-xl scale-100'} overflow-hidden min-h-[360px] md:min-h-[400px] flex flex-col justify-center`}
           >
             <div 
-              className={`transition-all duration-500 ease-in-out transform ${isAnimating ? 'opacity-0 scale-95 translate-x-4' : 'opacity-100 scale-100 translate-x-0'}`}
+              className={`transition-all duration-500 ease-in-out transform ${isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
             >
               <div className="flex gap-1 mb-6 md:mb-8">
                 {[...Array(approvedTestimonials[currentIndex].rating)].map((_, idx) => (
@@ -92,21 +98,21 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
               </div>
               
               <div className="mb-8 md:mb-12 relative">
-                <Quote size={40} className="text-slate-50 absolute -top-4 md:-top-10 -left-2 md:-left-6 -z-0" />
-                <p className="text-lg md:text-3xl text-slate-700 font-medium leading-relaxed relative z-10 italic">
+                <Quote size={60} className="text-slate-50 absolute -top-10 -left-6 -z-0" />
+                <p className="text-lg md:text-2xl text-slate-700 font-medium leading-relaxed relative z-10 italic">
                   "{approvedTestimonials[currentIndex].quote}"
                 </p>
               </div>
 
               <div className="flex items-center gap-4 md:gap-5">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-slate-900 rounded-xl md:rounded-2xl flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg shadow-slate-900/20">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-slate-900 rounded-xl md:rounded-2xl flex items-center justify-center text-white font-bold text-xl md:text-2xl">
                   {approvedTestimonials[currentIndex].name.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight">
+                  <h4 className="text-base md:text-lg font-black text-slate-900 uppercase tracking-tight leading-none mb-1">
                     {approvedTestimonials[currentIndex].name}
                   </h4>
-                  <p className="text-[10px] md:text-sm font-bold text-slate-400 uppercase tracking-widest">
+                  <p className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
                     {approvedTestimonials[currentIndex].company}
                   </p>
                 </div>
@@ -115,7 +121,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
             
             {/* Interaction Indicator */}
             {isPaused && (
-              <div className="absolute top-4 right-6 text-[8px] font-black text-slate-300 uppercase tracking-widest animate-pulse">
+              <div className="absolute bottom-4 right-8 text-[8px] font-black text-amber-500 uppercase tracking-[0.3em] animate-pulse">
                 Paused for Reading
               </div>
             )}
@@ -123,12 +129,12 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
 
           {/* Navigation Controls */}
           {approvedTestimonials.length > 1 && (
-            <div className="flex justify-center md:justify-between items-center mt-8 md:mt-0 gap-6 md:absolute md:top-1/2 md:-translate-y-1/2 md:w-[calc(100%+100px)] md:-left-[50px]">
-              <button onClick={handlePrev} className="p-3 md:p-4 rounded-full bg-white border border-slate-200 text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-md active:scale-90">
-                <ChevronLeft size={20} />
+            <div className="flex justify-center md:justify-between items-center mt-8 md:mt-0 gap-6 md:absolute md:top-1/2 md:-translate-y-1/2 md:w-[calc(100%+120px)] md:-left-[60px]">
+              <button onClick={handlePrev} className="p-4 rounded-full bg-white border border-slate-200 text-slate-900 hover:bg-slate-950 hover:text-white transition-all shadow-lg active:scale-90">
+                <ChevronLeft size={24} />
               </button>
-              <button onClick={handleNext} className="p-3 md:p-4 rounded-full bg-white border border-slate-200 text-slate-900 hover:bg-slate-900 hover:text-white transition-all shadow-md active:scale-90">
-                <ChevronRight size={20} />
+              <button onClick={handleNext} className="p-4 rounded-full bg-white border border-slate-200 text-slate-900 hover:bg-slate-950 hover:text-white transition-all shadow-lg active:scale-90">
+                <ChevronRight size={24} />
               </button>
             </div>
           )}
@@ -137,39 +143,41 @@ const Testimonials: React.FC<TestimonialsProps> = ({ testimonials, setTestimonia
 
       {/* Submission Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] flex items-center justify-center p-6">
-          <div className="bg-white rounded-[32px] p-8 md:p-12 w-full max-w-xl shadow-2xl relative">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-8 right-8 text-slate-400 hover:text-slate-900"><X size={24} /></button>
-            <h3 className="text-2xl font-black mb-8">Write a Testimonial</h3>
-            <form onSubmit={handleSubmitReview} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Name</label>
-                  <input required value={newReview.name} onChange={e => setNewReview({...newReview, name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[500] flex items-center justify-center p-6">
+          <div className="bg-white rounded-[40px] p-8 md:p-12 w-full max-w-xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-10 right-10 text-slate-400 hover:text-slate-900"><X size={32} /></button>
+            <div className="overflow-y-auto px-1">
+              <h3 className="text-2xl font-black mb-8 tracking-tight">Client Satisfaction Report</h3>
+              <form onSubmit={handleSubmitReview} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identify Name</label>
+                    <input required value={newReview.name} onChange={e => setNewReview({...newReview, name: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Corporate Entity</label>
+                    <input required value={newReview.company} onChange={e => setNewReview({...newReview, company: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-sm" />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Company</label>
-                  <input required value={newReview.company} onChange={e => setNewReview({...newReview, company: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none" />
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Feedback Statement</label>
+                  <textarea required rows={4} value={newReview.quote} onChange={e => setNewReview({...newReview, quote: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none resize-none font-medium text-sm italic" placeholder="How was your logistics experience?" />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Review</label>
-                <textarea required rows={4} value={newReview.quote} onChange={e => setNewReview({...newReview, quote: e.target.value})} className="w-full px-4 py-3 bg-slate-50 rounded-xl outline-none resize-none" placeholder="Tell us about your experience..." />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating</label>
-                <div className="flex gap-2">
-                  {[1,2,3,4,5].map(num => (
-                    <button key={num} type="button" onClick={() => setNewReview({...newReview, rating: num})} className="p-1">
-                      <Star size={24} className={num <= newReview.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'} />
-                    </button>
-                  ))}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Service Grade</label>
+                  <div className="flex gap-2">
+                    {[1,2,3,4,5].map(num => (
+                      <button key={num} type="button" onClick={() => setNewReview({...newReview, rating: num})} className="p-2 transition-transform hover:scale-110">
+                        <Star size={32} className={num <= newReview.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
-                Submit for Approval <Send size={18} />
-              </button>
-            </form>
+                <button type="submit" className="btn-primary w-full py-5 text-sm gap-3 shadow-xl">
+                  Commit Review <Send size={18} />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}

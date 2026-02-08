@@ -46,16 +46,11 @@ const About: React.FC<AboutProps> = ({ image, details }) => {
             </div>
             
             <h3 className="text-4xl md:text-6xl font-black leading-[1.1] mb-8 tracking-tighter text-slate-900">
-              {details.location.split(',')[0]}'s Premier <br /><span className="text-slate-400">Logistics Hub.</span>
+              {details.location.split(',')[0]}'s Leading <br /><span className="text-slate-400">Roadway Hub.</span>
             </h3>
             
-            <div className="space-y-6 text-base md:text-lg text-slate-600 font-medium leading-relaxed">
-              <p>
-                Established as a <strong className="text-slate-900 underline decoration-amber-500 decoration-2 underline-offset-4">Proprietor Firm</strong> in {details.estd}, {details.name} has evolved into a premier name in the Indian logistics sector. Based in {details.location}, we serve as the logistical backbone for major industrial players.
-              </p>
-              <p>
-                Under the direct leadership of <strong>{details.ceo}</strong>, our skilled experts ensure every shipment delivers precision results. We pride ourselves on budget-friendly execution without compromising on global quality standards.
-              </p>
+            <div className="space-y-6 text-base md:text-lg text-slate-600 font-medium leading-relaxed whitespace-pre-wrap">
+              {details.aboutText || "Strategic logistics provider offering pan-India roadway solutions."}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">

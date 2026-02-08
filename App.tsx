@@ -12,7 +12,8 @@ import GeminiAssistant from './components/GeminiAssistant.tsx';
 import AdminPanel from './components/AdminPanel.tsx';
 import Tracking from './components/Tracking.tsx';
 import { 
-  SERVICES as INITIAL_SERVICES,
+  INITIAL_SERVICES,
+  INITIAL_TESTIMONIALS,
   COMPANY_NAME,
   ESTD_YEAR,
   LOCATION,
@@ -27,7 +28,6 @@ import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment } from './ty
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin');
   
-  // Dynamic Content States
   const [services, setServices] = useState<Service[]>([]);
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -44,123 +44,72 @@ const App: React.FC = () => {
     email: CONTACT_EMAIL,
     gst: GST_NO,
     location: LOCATION,
-    estd: ESTD_YEAR
+    estd: ESTD_YEAR,
+    aboutText: `Established as a Proprietor Firm in ${ESTD_YEAR}, ${COMPANY_NAME} has evolved into a premier name in the Indian logistics sector. Based in ${LOCATION}, we serve as the logistical backbone for major industrial players. Under the direct leadership of ${CEO}, our skilled experts ensure every shipment delivers precision results.`,
+    socialLinks: [
+      { platform: 'facebook', url: '#' },
+      { platform: 'linkedin', url: '#' },
+      { platform: 'instagram', url: '#' }
+    ],
+    footerLinks: [
+      { label: 'Privacy Policy', url: '#' },
+      { label: 'Carrier Terms', url: '#' }
+    ]
   });
 
   useEffect(() => {
-    // Load Company Details
+    // Company Details
     const storedDetails = localStorage.getItem('dr_company_details');
     if (storedDetails) setCompanyDetails(JSON.parse(storedDetails));
 
-    // Load Services
+    // Services
     const storedServices = localStorage.getItem('dr_services');
-    if (storedServices) {
-      setServices(JSON.parse(storedServices));
-    } else {
-      const mapped = INITIAL_SERVICES.map(s => ({
-        ...s,
-        image: s.image || 'https://images.unsplash.com/photo-1594818379496-da1e345b0ded?auto=format&fit=crop&q=80&w=800'
-      }));
-      setServices(mapped);
-      localStorage.setItem('dr_services', JSON.stringify(mapped));
-    }
+    if (storedServices) setServices(JSON.parse(storedServices));
+    else setServices(INITIAL_SERVICES);
 
-    // Load Shipments
+    // Shipments
     const storedShipments = localStorage.getItem('dr_shipments');
-    if (storedShipments) {
-      setShipments(JSON.parse(storedShipments));
-    } else {
-      const initial: Shipment[] = [
-        {
-          id: '1',
-          trackingNumber: 'DR-2025-001',
-          sender: 'Delhi Hardware Mart',
-          receiver: 'Faridabad Hub',
-          origin: 'Faridabad, HR',
-          destination: 'Jaipur, RJ',
-          currentLocation: 'Jaipur Sorting Facility',
-          status: 'in-transit',
-          lastUpdate: new Date().toLocaleString(),
-          estimatedDelivery: 'Feb 28, 2025',
-          description: 'Shipment has left the Faridabad hub and is currently at Jaipur Sorting Facility.'
-        }
-      ];
+    if (storedShipments) setShipments(JSON.parse(storedShipments));
+    else {
+      const initial: Shipment[] = [{ id: '1', trackingNumber: 'DR-2025-001', sender: 'Delhi Hardware Mart', receiver: 'Faridabad Hub', origin: 'Faridabad, HR', destination: 'Jaipur, RJ', currentLocation: 'Jaipur Terminal', status: 'in-transit', lastUpdate: new Date().toLocaleString(), estimatedDelivery: '28 Feb, 2025', description: 'Consignment in transit between hubs.' }];
       setShipments(initial);
       localStorage.setItem('dr_shipments', JSON.stringify(initial));
     }
 
-    // Load Testimonials
+    // Testimonials
     const storedTestimonials = localStorage.getItem('dr_testimonials');
-    if (storedTestimonials) {
-      setTestimonials(JSON.parse(storedTestimonials));
-    } else {
-      const initial: Testimonial[] = [
-        {
-          id: '1',
-          name: "Amit Sharma",
-          company: "Delhi Hardware Mart",
-          role: "Logistics Head",
-          quote: "Deluxe Roadways has been our trusted partner for years. Their mini-truck service is exceptionally punctual.",
-          rating: 5,
-          approved: true
-        }
-      ];
-      setTestimonials(initial);
-      localStorage.setItem('dr_testimonials', JSON.stringify(initial));
-    }
+    if (storedTestimonials) setTestimonials(JSON.parse(storedTestimonials));
+    else setTestimonials(INITIAL_TESTIMONIALS);
 
-    // Load Assets
+    // Assets
     const storedAssets = localStorage.getItem('dr_assets');
     if (storedAssets) setAssets(JSON.parse(storedAssets));
 
-    const handleHashChange = () => {
-      setIsAdmin(window.location.hash === '#admin');
-    };
+    const handleHashChange = () => setIsAdmin(window.location.hash === '#admin');
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  const updateAssets = (newAssets: SiteAssets) => {
-    setAssets(newAssets);
-    localStorage.setItem('dr_assets', JSON.stringify(newAssets));
-  };
-
-  const updateServices = (newServices: Service[]) => {
-    setServices(newServices);
-    localStorage.setItem('dr_services', JSON.stringify(newServices));
-  };
-
-  const updateShipments = (newShipments: Shipment[]) => {
-    setShipments(newShipments);
-    localStorage.setItem('dr_shipments', JSON.stringify(newShipments));
-  };
-
-  const updateTestimonials = (newTestimonials: Testimonial[]) => {
-    setTestimonials(newTestimonials);
-    localStorage.setItem('dr_testimonials', JSON.stringify(newTestimonials));
-  };
-
-  const updateCompanyDetails = (newDetails: CompanyDetails) => {
-    setCompanyDetails(newDetails);
-    localStorage.setItem('dr_company_details', JSON.stringify(newDetails));
-  };
+  // Persistence hooks
+  useEffect(() => { localStorage.setItem('dr_services', JSON.stringify(services)); }, [services]);
+  useEffect(() => { localStorage.setItem('dr_testimonials', JSON.stringify(testimonials)); }, [testimonials]);
+  useEffect(() => { localStorage.setItem('dr_shipments', JSON.stringify(shipments)); }, [shipments]);
+  useEffect(() => { localStorage.setItem('dr_company_details', JSON.stringify(companyDetails)); }, [companyDetails]);
+  useEffect(() => { localStorage.setItem('dr_assets', JSON.stringify(assets)); }, [assets]);
 
   if (isAdmin) {
     return <AdminPanel 
       services={services}
-      setServices={updateServices}
+      setServices={setServices}
       testimonials={testimonials}
-      setTestimonials={updateTestimonials}
+      setTestimonials={setTestimonials}
       assets={assets}
-      setAssets={updateAssets}
+      setAssets={setAssets}
       companyDetails={companyDetails}
-      setCompanyDetails={updateCompanyDetails}
+      setCompanyDetails={setCompanyDetails}
       shipments={shipments}
-      setShipments={updateShipments}
-      onClose={() => {
-        window.location.hash = '';
-        setIsAdmin(false);
-      }} 
+      setShipments={setShipments}
+      onClose={() => { window.location.hash = ''; setIsAdmin(false); }} 
     />;
   }
 
@@ -171,16 +120,13 @@ const App: React.FC = () => {
         <div className="relative">
           <Hero image={assets.heroImage} details={companyDetails} />
           <div className="max-w-7xl mx-auto px-6 -mt-24 sm:-mt-32 md:-mt-40 mb-20 relative z-50">
-            <div className="text-center mb-6">
-              <span className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 inline-block shadow-lg">Fleet Operations Hub</span>
-            </div>
             <Tracking shipments={shipments} />
           </div>
         </div>
         <About image={assets.aboutImage} details={companyDetails} />
         <Services services={services} />
         <Stats />
-        <Testimonials testimonials={testimonials} setTestimonials={updateTestimonials} />
+        <Testimonials testimonials={testimonials} setTestimonials={setTestimonials} />
         <Contact details={companyDetails} />
       </main>
       <Footer details={companyDetails} />

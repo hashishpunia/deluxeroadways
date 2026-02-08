@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Truck, Thermometer, Trash2, Box, Zap } from 'lucide-react';
 import { Service, Stat } from './types.ts';
 
@@ -12,42 +11,75 @@ export const FULL_ADDRESS = "Plot No. 15, Sector 24, Faridabad - 121005, Haryana
 export const CONTACT_PHONE = "+91 80489 67409";
 export const CONTACT_EMAIL = "info@deluxeroadways.com";
 
-export const SERVICES: Service[] = [
+export const INITIAL_SERVICES: Service[] = [
   {
     id: 'mini-truck',
     title: 'Mini Truck Logistics Services',
     description: 'High-quality Mini Truck solutions for agile urban and inter-city distribution.',
-    icon: 'truck'
+    icon: 'truck',
+    image: 'https://images.unsplash.com/photo-1594818379496-da1e345b0ded?auto=format&fit=crop&q=80&w=800'
   },
   {
     id: 'refrigerated',
     title: 'Refrigerated Trucks Logistics Services',
     description: 'Specialized temperature-controlled transportation for sensitive pharmaceutical and perishable goods.',
-    icon: 'thermometer'
+    icon: 'thermometer',
+    image: 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?auto=format&fit=crop&q=80&w=800'
   },
   {
     id: 'truck-transport',
-    title: 'Truck Transportation Logistic Services',
+    title: 'Heavy Truck Logistics',
     description: 'Heavy-duty industrial transportation solutions acknowledged for safety and reliability.',
-    icon: 'truck-moving'
+    icon: 'truck',
+    image: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800'
+  }
+];
+
+export const INITIAL_TESTIMONIALS = [
+  {
+    id: '1',
+    name: "Amit Sharma",
+    company: "Delhi Hardware Mart",
+    role: "Logistics Head",
+    quote: "Deluxe Roadways has been our trusted partner for years. Their mini-truck service is exceptionally punctual and professional.",
+    rating: 5,
+    approved: true
   },
   {
-    id: 'garbage-truck',
-    title: 'Garbage Truck Logistics Services',
-    description: 'Professional disposal and waste management logistics for municipal and industrial sectors.',
-    icon: 'trash-2'
+    id: '2',
+    name: "Rajesh Khanna",
+    company: "Faridabad Industrial Group",
+    role: "Operations Manager",
+    quote: "Highly reliable fleet and excellent support team. We've seen a 20% improvement in our delivery times since switching to Deluxe.",
+    rating: 5,
+    approved: true
   },
   {
-    id: 'tata-shaktee',
-    title: 'Tata Shaktee Logistics Service',
-    description: 'Leveraging high-tonnage Tata Shaktee fleets for robust material movement across industrial hubs.',
-    icon: 'zap'
+    id: '3',
+    name: "Priya Singh",
+    company: "MediCare Pharma",
+    role: "Supply Chain Lead",
+    quote: "Their refrigerated truck services are the best in Haryana. Temp-sensitive deliveries are handled with absolute care.",
+    rating: 5,
+    approved: true
   },
   {
-    id: 'box-truck',
-    title: 'Box Truck Logistics Services',
-    description: 'Secure and enclosed transportation for high-value commercial cargo and retail goods.',
-    icon: 'box'
+    id: '4',
+    name: "Vikram Adityan",
+    company: "Global Exports Ltd",
+    role: "CEO",
+    quote: "Professionalism at its peak. Deluxe Roadways is more than a transporter; they are a strategic logistics partner.",
+    rating: 5,
+    approved: true
+  },
+  {
+    id: '5',
+    name: "Suresh Gupta",
+    company: "Gupta & Sons",
+    role: "Proprietor",
+    quote: "Reliable, budget-friendly, and honest. Ram Bhagat and his team ensure complete peace of mind for our cargo.",
+    rating: 4,
+    approved: true
   }
 ];
 
@@ -57,16 +89,3 @@ export const STATS: Stat[] = [
   { label: 'Network Coverage', value: 'Pan-India', icon: 'map' },
   { label: 'Client Satisfaction', value: '5-Star', icon: 'star' }
 ];
-
-export const SYSTEM_INSTRUCTION = `
-You are the "Deluxe Roadways AI Assistant". 
-Core Knowledge:
-- Based in Faridabad, Haryana.
-- Established 2017 as a Proprietor firm.
-- Proprietor: Ram Bhagat.
-- Services: Mini Truck Logistics Services, Refrigerated Trucks Logistics Services, Truck Transportation Logistic Services, Garbage Truck Logistics Services, Tata Shaktee Logistics Service, and Box Truck Logistics Services.
-- Operations: We specialize in roadways/trucking across India.
-- Pickup: Primarily from Haryana; Drop: Pan India.
-- Tone: Professional, authoritative, and helpful.
-- For all pricing/rate inquiries, direct the user to click the "Ask Price" button or fill out the inquiry form.
-`;
