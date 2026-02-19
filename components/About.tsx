@@ -9,6 +9,12 @@ interface AboutProps {
 }
 
 const About: React.FC<AboutProps> = ({ image, details }) => {
+  const currentYear = new Date().getFullYear();
+  const calculatedYears = currentYear - details.estd;
+  const displayYears = details.experienceOverride && details.experienceOverride > 0 
+    ? details.experienceOverride 
+    : calculatedYears;
+
   const features = [
     { icon: Zap, title: "High Efficiency", text: "Optimized routes and smart scheduling for maximum output." },
     { icon: Clock, title: "Precision Timing", text: "Punctuality is the core pillar of our delivery promise." },
@@ -33,7 +39,7 @@ const About: React.FC<AboutProps> = ({ image, details }) => {
             <div className="absolute -bottom-6 md:-bottom-10 -right-4 md:-right-6 bg-amber-500 p-6 md:p-10 rounded-3xl shadow-2xl animate-bounce-slow">
               <Award size={40} className="text-slate-950 mb-2" />
               <div className="text-center lg:text-left">
-                <div className="text-2xl md:text-3xl font-black text-slate-950">{new Date().getFullYear() - details.estd}+</div>
+                <div className="text-2xl md:text-3xl font-black text-slate-950">{displayYears}+</div>
                 <div className="text-[8px] md:text-[10px] font-black text-slate-900/60 uppercase tracking-widest">Years of Excellence</div>
               </div>
             </div>

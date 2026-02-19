@@ -23,6 +23,16 @@ export interface Testimonial {
   approved: boolean;
 }
 
+export interface Inquiry {
+  id: number;
+  name: string;
+  phone: string;
+  service: string;
+  notes: string;
+  date: string;
+  status: 'new' | 'viewed' | 'resolved';
+}
+
 export interface SocialLink {
   platform: 'facebook' | 'twitter' | 'linkedin' | 'instagram';
   url: string;
@@ -42,6 +52,7 @@ export interface CompanyDetails {
   gst: string;
   location: string;
   estd: number;
+  experienceOverride?: number;
   logo?: string;
   aboutText?: string;
   socialLinks: SocialLink[];
@@ -64,13 +75,11 @@ export interface Shipment {
   description: string;
 }
 
-// Fixed missing Message export for GeminiAssistant
 export interface Message {
   role: 'user' | 'model';
   text: string;
 }
 
-// Fixed missing SiteAssets export for App and AdminPanel
 export interface SiteAssets {
   heroImage: string;
   aboutImage: string;

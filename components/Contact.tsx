@@ -1,13 +1,15 @@
 
 import React, { useState } from 'react';
 import { MapPin, Phone, Globe, Send, CheckCircle, Mail } from 'lucide-react';
-import { CompanyDetails } from '../types.ts';
+import { CompanyDetails, Inquiry } from '../types.ts';
 
 interface ContactProps {
   details: CompanyDetails;
+  inquiries: Inquiry[];
+  setInquiries: (i: Inquiry[]) => void;
 }
 
-const Contact: React.FC<ContactProps> = ({ details }) => {
+const Contact: React.FC<ContactProps> = ({ details, inquiries, setInquiries }) => {
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -15,23 +17,22 @@ const Contact: React.FC<ContactProps> = ({ details }) => {
     setFormState('submitting');
     
     const formData = new FormData(e.currentTarget);
-    const newInquiry = {
+    const newInquiry: Inquiry = {
       id: Date.now(),
-      name: formData.get('name'),
-      phone: formData.get('phone'),
-      service: formData.get('service'),
-      notes: formData.get('notes'),
+      name: formData.get('name') as string,
+      phone: formData.get('phone') as string,
+      service: formData.get('service') as string,
+      notes: formData.get('notes') as string,
       date: new Date().toLocaleString(),
       status: 'new'
     };
 
-    const existing = JSON.parse(localStorage.getItem('dr_inquiries') || '[]');
-    localStorage.setItem('dr_inquiries', JSON.stringify([newInquiry, ...existing]));
+    setInquiries([newInquiry, ...inquiries]);
 
     setTimeout(() => {
       setFormState('success');
       setTimeout(() => setFormState('idle'), 5000);
-    }, 1500);
+    }, 1000);
   };
 
   return (
@@ -95,12 +96,7 @@ const Contact: React.FC<ContactProps> = ({ details }) => {
               </div>
               <h4 className="text-2xl font-bold text-slate-900 mb-4">Inquiry Received</h4>
               <p className="text-slate-500 max-w-sm">Thank you. Our team will review your requirements and get back to you with the best price shortly.</p>
-              <button 
-                onClick={() => setFormState('idle')}
-                className="mt-8 text-sm font-bold text-slate-400 hover:text-slate-900 uppercase tracking-widest transition-colors"
-              >
-                Send Another Request
-              </button>
+              <button onClick={() => setFormState('idle')} className="mt-8 text-sm font-bold text-slate-400 hover:text-slate-950 uppercase tracking-widest transition-colors">Send Another Request</button>
             </div>
           ) : (
             <>
@@ -131,13 +127,8 @@ const Contact: React.FC<ContactProps> = ({ details }) => {
                   <textarea name="notes" required rows={4} className="w-full px-4 py-3.5 rounded-xl border border-slate-200 focus:border-slate-900 outline-none transition-all font-medium resize-none" placeholder="Volume, Route, etc."></textarea>
                 </div>
                 <div className="md:col-span-2">
-                  <button 
-                    disabled={formState === 'submitting'}
-                    className="btn-primary w-full flex items-center justify-center gap-2 py-4 disabled:opacity-70"
-                  >
-                    {formState === 'submitting' ? 'Sending...' : (
-                      <>Get Best Price <Send size={18} /></>
-                    )}
+                  <button disabled={formState === 'submitting'} className="btn-primary w-full flex items-center justify-center gap-2 py-4 disabled:opacity-70">
+                    {formState === 'submitting' ? 'Sending...' : <><span className="hidden sm:inline">Get Best Price</span><span className="sm:hidden">Send</span> <Send size={18} /></>}
                   </button>
                 </div>
               </form>

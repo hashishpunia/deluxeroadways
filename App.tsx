@@ -23,15 +23,19 @@ import {
   CONTACT_PHONE,
   CONTACT_EMAIL
 } from './constants.tsx';
-import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment } from './types.ts';
+import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment, Inquiry } from './types.ts';
 
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin');
   
-  // Use lazy initializer to prevent state overwrite from storage race conditions
   const [services, setServices] = useState<Service[]>(() => {
     const saved = localStorage.getItem('dr_services');
     return (saved && saved !== '[]') ? JSON.parse(saved) : INITIAL_SERVICES;
+  });
+
+  const [inquiries, setInquiries] = useState<Inquiry[]>(() => {
+    const saved = localStorage.getItem('dr_inquiries');
+    return (saved && saved !== '[]') ? JSON.parse(saved) : [];
   });
 
   const [shipments, setShipments] = useState<Shipment[]>(() => {
@@ -84,8 +88,8 @@ const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Save to storage only when data actually changes
   useEffect(() => { localStorage.setItem('dr_services', JSON.stringify(services)); }, [services]);
+  useEffect(() => { localStorage.setItem('dr_inquiries', JSON.stringify(inquiries)); }, [inquiries]);
   useEffect(() => { localStorage.setItem('dr_testimonials', JSON.stringify(testimonials)); }, [testimonials]);
   useEffect(() => { localStorage.setItem('dr_shipments', JSON.stringify(shipments)); }, [shipments]);
   useEffect(() => { localStorage.setItem('dr_company_details', JSON.stringify(companyDetails)); }, [companyDetails]);
@@ -95,6 +99,8 @@ const App: React.FC = () => {
     return <AdminPanel 
       services={services}
       setServices={setServices}
+      inquiries={inquiries}
+      setInquiries={setInquiries}
       testimonials={testimonials}
       setTestimonials={setTestimonials}
       assets={assets}
@@ -121,7 +127,7 @@ const App: React.FC = () => {
         <Services services={services} />
         <Stats />
         <Testimonials testimonials={testimonials} setTestimonials={setTestimonials} />
-        <Contact details={companyDetails} />
+        <Contact details={companyDetails} inquiries={inquiries} setInquiries={setInquiries} />
       </main>
       <Footer details={companyDetails} />
       <GeminiAssistant details={companyDetails} />
