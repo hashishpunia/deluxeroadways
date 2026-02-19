@@ -28,69 +28,61 @@ import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment } from './ty
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin');
   
-  const [services, setServices] = useState<Service[]>([]);
-  const [shipments, setShipments] = useState<Shipment[]>([]);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [assets, setAssets] = useState<SiteAssets>({
-    heroImage: 'https://images.unsplash.com/photo-1621259182978-f09e5e2ca845?auto=format&fit=crop&q=80&w=2400',
-    aboutImage: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200'
+  const [services, setServices] = useState<Service[]>(() => {
+    const saved = localStorage.getItem('dr_services');
+    return saved ? JSON.parse(saved) : INITIAL_SERVICES;
   });
 
-  const [companyDetails, setCompanyDetails] = useState<CompanyDetails>({
-    name: COMPANY_NAME,
-    ceo: CEO,
-    address: FULL_ADDRESS,
-    phone: CONTACT_PHONE,
-    email: CONTACT_EMAIL,
-    gst: GST_NO,
-    location: LOCATION,
-    estd: ESTD_YEAR,
-    aboutText: `Established as a Proprietor Firm in ${ESTD_YEAR}, ${COMPANY_NAME} has evolved into a premier name in the Indian logistics sector. Based in ${LOCATION}, we serve as the logistical backbone for major industrial players. Under the direct leadership of ${CEO}, our skilled experts ensure every shipment delivers precision results.`,
-    socialLinks: [
-      { platform: 'facebook', url: '#' },
-      { platform: 'linkedin', url: '#' },
-      { platform: 'instagram', url: '#' }
-    ],
-    footerLinks: [
-      { label: 'Privacy Policy', url: '#' },
-      { label: 'Carrier Terms', url: '#' }
-    ]
+  const [shipments, setShipments] = useState<Shipment[]>(() => {
+    const saved = localStorage.getItem('dr_shipments');
+    return saved ? JSON.parse(saved) : [
+      { id: '1', trackingNumber: 'DR-2025-001', sender: 'Delhi Hardware Mart', receiver: 'Faridabad Hub', origin: 'Faridabad, HR', destination: 'Jaipur, RJ', currentLocation: 'Jaipur Terminal', status: 'in-transit', lastUpdate: new Date().toLocaleString(), estimatedDelivery: '28 Feb, 2025', description: 'Consignment in transit between hubs.' }
+    ];
+  });
+
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(() => {
+    const saved = localStorage.getItem('dr_testimonials');
+    return saved ? JSON.parse(saved) : INITIAL_TESTIMONIALS;
+  });
+
+  const [assets, setAssets] = useState<SiteAssets>(() => {
+    const saved = localStorage.getItem('dr_assets');
+    return saved ? JSON.parse(saved) : {
+      heroImage: 'https://images.unsplash.com/photo-1621259182978-f09e5e2ca845?auto=format&fit=crop&q=80&w=2400',
+      aboutImage: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200'
+    };
+  });
+
+  const [companyDetails, setCompanyDetails] = useState<CompanyDetails>(() => {
+    const saved = localStorage.getItem('dr_company_details');
+    return saved ? JSON.parse(saved) : {
+      name: COMPANY_NAME,
+      ceo: CEO,
+      address: FULL_ADDRESS,
+      phone: CONTACT_PHONE,
+      email: CONTACT_EMAIL,
+      gst: GST_NO,
+      location: LOCATION,
+      estd: ESTD_YEAR,
+      aboutText: `Established as a Proprietor Firm in ${ESTD_YEAR}, ${COMPANY_NAME} has evolved into a premier name in the Indian logistics sector. Based in ${LOCATION}, we serve as the logistical backbone for major industrial players. Under the direct leadership of ${CEO}, our skilled experts ensure every shipment delivers precision results.`,
+      socialLinks: [
+        { platform: 'facebook', url: '#' },
+        { platform: 'linkedin', url: '#' },
+        { platform: 'instagram', url: '#' }
+      ],
+      footerLinks: [
+        { label: 'Privacy Policy', url: '#' },
+        { label: 'Carrier Terms', url: '#' }
+      ]
+    };
   });
 
   useEffect(() => {
-    // Company Details
-    const storedDetails = localStorage.getItem('dr_company_details');
-    if (storedDetails) setCompanyDetails(JSON.parse(storedDetails));
-
-    // Services
-    const storedServices = localStorage.getItem('dr_services');
-    if (storedServices) setServices(JSON.parse(storedServices));
-    else setServices(INITIAL_SERVICES);
-
-    // Shipments
-    const storedShipments = localStorage.getItem('dr_shipments');
-    if (storedShipments) setShipments(JSON.parse(storedShipments));
-    else {
-      const initial: Shipment[] = [{ id: '1', trackingNumber: 'DR-2025-001', sender: 'Delhi Hardware Mart', receiver: 'Faridabad Hub', origin: 'Faridabad, HR', destination: 'Jaipur, RJ', currentLocation: 'Jaipur Terminal', status: 'in-transit', lastUpdate: new Date().toLocaleString(), estimatedDelivery: '28 Feb, 2025', description: 'Consignment in transit between hubs.' }];
-      setShipments(initial);
-      localStorage.setItem('dr_shipments', JSON.stringify(initial));
-    }
-
-    // Testimonials
-    const storedTestimonials = localStorage.getItem('dr_testimonials');
-    if (storedTestimonials) setTestimonials(JSON.parse(storedTestimonials));
-    else setTestimonials(INITIAL_TESTIMONIALS);
-
-    // Assets
-    const storedAssets = localStorage.getItem('dr_assets');
-    if (storedAssets) setAssets(JSON.parse(storedAssets));
-
     const handleHashChange = () => setIsAdmin(window.location.hash === '#admin');
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Persistence hooks
   useEffect(() => { localStorage.setItem('dr_services', JSON.stringify(services)); }, [services]);
   useEffect(() => { localStorage.setItem('dr_testimonials', JSON.stringify(testimonials)); }, [testimonials]);
   useEffect(() => { localStorage.setItem('dr_shipments', JSON.stringify(shipments)); }, [shipments]);

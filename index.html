@@ -8,12 +8,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
         
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #ffffff;
-            color: #1a1a1a;
+            color: #0f172a;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
@@ -29,26 +29,24 @@
             }
         }
 
-        .clean-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 24px;
-            transition: all 0.3s ease;
-        }
-
         .btn-primary {
-            background-color: #1a1a1a;
+            background-color: #020617;
             color: #ffffff;
             padding: 14px 28px;
             border-radius: 100px;
-            font-weight: 700;
+            font-weight: 800;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 0.875rem;
+            letter-spacing: 0.075em;
+            font-size: 0.813rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #f59e0b;
+            color: #020617;
         }
 
         .btn-primary:active {
@@ -56,9 +54,14 @@
         }
 
         .glass-nav {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 900 !important;
+            letter-spacing: -0.025em;
         }
     </style>
 <script type="importmap">
@@ -75,7 +78,7 @@
 }
 </script>
 </head>
-<body class="selection:bg-slate-900 selection:text-white">
+<body class="selection:bg-amber-500 selection:text-slate-900">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
 </body>

@@ -240,6 +240,47 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
+        {/* Consignment Hub View */}
+        {activeTab === 'shipments' && (
+          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm animate-in fade-in">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Tracking ID</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Route</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {shipments.map(s => (
+                  <tr key={s.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-slate-900">{s.trackingNumber}</td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-bold">{s.origin.split(',')[0]} → {s.destination.split(',')[0]}</div>
+                      <div className="text-[10px] text-slate-400">{s.currentLocation}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                        s.status === 'delivered' ? 'bg-green-100 text-green-600' : 
+                        s.status === 'in-transit' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {s.status.replace('-', ' ')}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <button onClick={() => setEditingShipment(s)} className="p-2 text-slate-400 hover:text-slate-950 transition-colors"><Edit size={16} /></button>
+                        <button onClick={() => setShipments(shipments.filter(item => item.id !== s.id))} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {/* Fleet Management View */}
         {activeTab === 'services' && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 animate-in fade-in">
@@ -289,8 +330,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     <div className="font-bold text-slate-900">{t.name}</div>
                     <div className="text-[10px] text-slate-400 uppercase font-black">{t.company}</div>
                     <div className="mt-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => setEditingTestimonial(t)} className="p-2 text-slate-400 hover:text-slate-950"><Edit size={16} /></button>
-                      <button onClick={() => setTestimonials(testimonials.filter(item => item.id !== t.id))} className="p-2 text-slate-400 hover:text-red-500"><Trash2 size={16} /></button>
+                      <button onClick={() => setEditingTestimonial(t)} className="p-2 text-slate-400 hover:text-slate-950 transition-colors"><Edit size={16} /></button>
+                      <button onClick={() => setTestimonials(testimonials.filter(item => item.id !== t.id))} className="p-2 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={16} /></button>
                     </div>
                   </div>
                 ))}
@@ -299,16 +340,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
-        {/* Settings View */}
+        {/* Global Settings View */}
         {activeTab === 'settings' && (
-          <div className="bg-white p-10 md:p-14 rounded-[40px] border border-slate-200 shadow-sm max-w-5xl">
+          <div className="bg-white p-10 md:p-14 rounded-[40px] border border-slate-200 shadow-sm max-w-5xl animate-in fade-in">
             <h3 className="text-3xl font-black text-slate-950 mb-12 tracking-tight">Business Configuration</h3>
             <form className="space-y-12" onSubmit={e => { e.preventDefault(); alert('Settings saved successfully!'); }}>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Company Identity</label>
-                  <input value={companyDetails.name} onChange={e => setCompanyDetails({ ...companyDetails, name: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none font-bold" placeholder="Company Name" />
+                  <input value={companyDetails.name} onChange={e => setCompanyDetails({ ...companyDetails, name: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" placeholder="Company Name" />
                   <div className="flex items-center gap-4 mt-2">
                     {companyDetails.logo && <img src={companyDetails.logo} className="w-12 h-12 object-contain rounded bg-slate-100" />}
                     <label className="flex-1 py-3 px-6 bg-slate-950 text-white rounded-xl text-[10px] font-black text-center cursor-pointer uppercase tracking-widest">Update Logo <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} /></label>
@@ -316,60 +356,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Leadership</label>
-                  <input value={companyDetails.ceo} onChange={e => setCompanyDetails({ ...companyDetails, ceo: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none font-bold" placeholder="Proprietor Name" />
-                  <input value={companyDetails.estd} onChange={e => setCompanyDetails({ ...companyDetails, estd: parseInt(e.target.value) || 2017 })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none font-bold" placeholder="Established Year" />
+                  <input value={companyDetails.ceo} onChange={e => setCompanyDetails({ ...companyDetails, ceo: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" placeholder="Proprietor Name" />
+                  <input value={companyDetails.estd} onChange={e => setCompanyDetails({ ...companyDetails, estd: parseInt(e.target.value) || 2017 })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" placeholder="Established Year" />
                 </div>
               </div>
-
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">About Section Content</label>
-                <textarea value={companyDetails.aboutText} onChange={e => setCompanyDetails({ ...companyDetails, aboutText: e.target.value })} className="w-full px-6 py-4 bg-slate-50 rounded-2xl outline-none font-medium h-32 resize-none" placeholder="Enter company history, mission, and vision details..." />
+                <textarea value={companyDetails.aboutText} onChange={e => setCompanyDetails({ ...companyDetails, aboutText: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-medium h-32 resize-none" placeholder="Enter company history..." />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="space-y-6">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Link size={14}/> Social Media Handles</label>
-                  {[
-                    { plat: 'facebook', icon: Facebook },
-                    { plat: 'linkedin', icon: Linkedin },
-                    { plat: 'instagram', icon: Instagram }
-                  ].map(social => (
-                    <div key={social.plat} className="flex items-center gap-3">
-                      <social.icon size={20} className="text-slate-400" />
-                      <input 
-                        value={companyDetails.socialLinks?.find(l => l.platform === social.plat)?.url || ''} 
-                        onChange={e => {
-                          const links = [...(companyDetails.socialLinks || [])];
-                          const idx = links.findIndex(l => l.platform === social.plat);
-                          if(idx > -1) links[idx].url = e.target.value;
-                          else links.push({ platform: social.plat as any, url: e.target.value });
-                          setCompanyDetails({...companyDetails, socialLinks: links});
-                        }}
-                        className="flex-1 px-4 py-2 bg-slate-50 rounded-xl outline-none text-sm font-bold" 
-                        placeholder={`${social.plat.charAt(0).toUpperCase() + social.plat.slice(1)} URL`} 
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="space-y-6">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><Settings size={14}/> Footer Quick Links</label>
-                  {(companyDetails.footerLinks || [{label: 'Privacy Policy', url: '#'}, {label: 'Terms of Service', url: '#'}]).map((link, i) => (
-                    <div key={i} className="flex gap-2">
-                      <input value={link.label} className="w-1/3 px-4 py-2 bg-slate-50 rounded-xl outline-none text-[10px] font-black uppercase tracking-widest" placeholder="Label" />
-                      <input value={link.url} className="flex-1 px-4 py-2 bg-slate-50 rounded-xl outline-none text-xs font-bold" placeholder="URL" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               <div className="pt-10 border-t border-slate-100 flex justify-end">
-                <button type="submit" className="bg-slate-950 text-white px-14 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black shadow-xl flex items-center gap-3"><Save size={18} className="text-amber-500" /> Save Operations Settings</button>
+                <button type="submit" className="bg-slate-950 text-white px-14 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-black shadow-xl flex items-center gap-3"><Save size={18} className="text-amber-500" /> Save Settings</button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Visual Assets View */}
+        {/* Media Assets View */}
         {activeTab === 'assets' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 animate-in fade-in">
             {[
@@ -395,24 +397,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
         )}
 
-        {/* Modals with Scroll and Sticky Footers */}
+        {/* Editing Modals */}
         {editingService && (
-          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[500] flex items-center justify-center p-0 md:p-6 lg:p-12">
-            <div className="bg-white w-full h-full md:h-auto md:max-h-[90vh] md:max-w-4xl md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in slide-in-from-bottom-20">
+          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[500] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in">
               <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-20 shrink-0">
-                <h3 className="text-2xl font-black text-slate-950 tracking-tight">Service Configuration</h3>
+                <h3 className="text-2xl font-black text-slate-950 tracking-tight">Fleet Configuration</h3>
                 <button onClick={() => setEditingService(null)} className="p-2 text-slate-400 hover:text-slate-950 rounded-full transition-all"><X size={32} /></button>
               </div>
-              <div className="flex-1 overflow-y-auto p-6 md:p-10 lg:p-12">
-                <form id="service-form" onSubmit={handleSaveService} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex-1 overflow-y-auto p-6 md:p-10">
+                <form id="service-form" onSubmit={handleSaveService} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Service Title</label>
-                      <input required value={editingService.title} onChange={e => setEditingService({...editingService, title: e.target.value})} className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none font-bold focus:border-amber-500 transition-all" />
+                      <input required value={editingService.title} onChange={e => setEditingService({...editingService, title: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Icon Style</label>
-                      <select value={editingService.icon} onChange={e => setEditingService({...editingService, icon: e.target.value})} className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none font-black uppercase tracking-widest text-[11px] focus:border-amber-500 transition-all">
+                      <select value={editingService.icon} onChange={e => setEditingService({...editingService, icon: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black uppercase tracking-widest text-[11px]">
                         <option value="truck">General Trucking</option>
                         <option value="thermometer">Refrigerated</option>
                         <option value="trash-2">Waste Logistics</option>
@@ -422,44 +424,102 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Feature Image (URL or Upload)</label>
-                    <div className="flex gap-4 items-center">
-                      <input value={editingService.image} onChange={e => setEditingService({...editingService, image: e.target.value})} className="flex-1 px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none font-bold text-sm" placeholder="Image URL..." />
-                      <label className="p-5 bg-slate-950 text-white rounded-2xl cursor-pointer hover:bg-black transition-all shadow-xl"><Upload size={20}/><input type="file" className="hidden" accept="image/*" onChange={e => {
-                        const file = e.target.files?.[0];
-                        if(file){
-                          const reader = new FileReader();
-                          reader.onloadend = () => setEditingService({...editingService, image: reader.result as string});
-                          reader.readAsDataURL(file);
-                        }
-                      }}/></label>
-                    </div>
-                    {editingService.image && <img src={editingService.image} className="w-32 h-20 object-cover rounded-xl mt-4 border shadow-sm" />}
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Feature Image URL</label>
+                    <input value={editingService.image} onChange={e => setEditingService({...editingService, image: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-sm" placeholder="Image URL..." />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Detailed Description</label>
-                    <textarea required rows={4} value={editingService.description} onChange={e => setEditingService({...editingService, description: e.target.value})} className="w-full px-8 py-6 bg-slate-50 border-2 border-slate-100 rounded-[32px] outline-none font-bold text-sm focus:border-amber-500 transition-all italic leading-relaxed" placeholder="Market-ready service summary..." />
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Description</label>
+                    <textarea required rows={4} value={editingService.description} onChange={e => setEditingService({...editingService, description: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-sm" />
                   </div>
                 </form>
               </div>
-              <div className="p-6 md:p-10 border-t border-slate-100 bg-slate-50/80 backdrop-blur-md sticky bottom-0 z-40 shrink-0">
-                <div className="flex gap-4 max-w-xl mx-auto">
-                  <button type="submit" form="service-form" className="flex-[3] bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3"><SaveIcon size={20} className="text-amber-500" /> Save Fleet Option</button>
-                  <button type="button" onClick={() => setEditingService(null)} className="flex-1 bg-white border-2 border-slate-200 text-slate-400 rounded-2xl font-black uppercase tracking-widest text-[11px]">Discard</button>
-                </div>
+              <div className="p-6 md:p-10 border-t border-slate-100 bg-slate-50/50 sticky bottom-0">
+                <button type="submit" form="service-form" className="w-full bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3"><SaveIcon size={20} className="text-amber-500" /> Save Fleet Option</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Generic Loader and Empty States */}
-        {activeTab === 'inquiries' && inquiries.length === 0 && (
-          <div className="py-40 flex flex-col items-center justify-center text-slate-300">
-            <Inbox size={64} className="mb-6 opacity-20" />
-            <span className="font-black uppercase tracking-[0.4em] text-xs">Lead desk is currently clear</span>
+        {editingShipment && (
+          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[500] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in">
+              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-20">
+                <h3 className="text-2xl font-black text-slate-950 tracking-tight">Consignment Manifest</h3>
+                <button onClick={() => setEditingShipment(null)} className="p-2 text-slate-400 hover:text-slate-950 rounded-full transition-all"><X size={32} /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 md:p-10">
+                <form id="shipment-form" onSubmit={handleSaveShipment} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Tracking ID</label>
+                      <input readOnly value={editingShipment.trackingNumber} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-slate-400" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Status</label>
+                      <select value={editingShipment.status} onChange={e => setEditingShipment({...editingShipment, status: e.target.value as ShipmentStatus})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black uppercase text-[10px] tracking-widest">
+                        <option value="dispatched">Dispatched</option>
+                        <option value="in-transit">In Transit</option>
+                        <option value="near-destination">Near Destination</option>
+                        <option value="delivered">Delivered</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Origin Hub</label>
+                      <input required value={editingShipment.origin} onChange={e => setEditingShipment({...editingShipment, origin: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Destination Hub</label>
+                      <input required value={editingShipment.destination} onChange={e => setEditingShipment({...editingShipment, destination: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Live Location Description</label>
+                    <input required value={editingShipment.currentLocation} onChange={e => setEditingShipment({...editingShipment, currentLocation: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Operations Summary</label>
+                    <textarea required rows={3} value={editingShipment.description} onChange={e => setEditingShipment({...editingShipment, description: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-medium text-sm italic resize-none" />
+                  </div>
+                </form>
+              </div>
+              <div className="p-6 md:p-10 border-t border-slate-100 bg-slate-50/50 sticky bottom-0">
+                <button type="submit" form="shipment-form" className="w-full bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3"><Save size={18} className="text-amber-500" /> Save Manifest</button>
+              </div>
+            </div>
           </div>
         )}
 
+        {editingTestimonial && (
+          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[500] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in">
+              <div className="p-6 md:p-8 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-2xl font-black text-slate-950 tracking-tight">Review Adjustment</h3>
+                <button onClick={() => setEditingTestimonial(null)} className="p-2 text-slate-400 hover:text-slate-950 rounded-full transition-all"><X size={32} /></button>
+              </div>
+              <div className="p-6 md:p-10">
+                <form onSubmit={handleSaveTestimonial} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Name</label>
+                      <input required value={editingTestimonial.name} onChange={e => setEditingTestimonial({...editingTestimonial, name: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Company</label>
+                      <input required value={editingTestimonial.company} onChange={e => setEditingTestimonial({...editingTestimonial, company: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Statement</label>
+                    <textarea required rows={4} value={editingTestimonial.quote} onChange={e => setEditingTestimonial({...editingTestimonial, quote: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-medium text-sm italic resize-none" />
+                  </div>
+                  <button type="submit" className="w-full bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3"><Save size={18} className="text-amber-500" /> Save Review</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
