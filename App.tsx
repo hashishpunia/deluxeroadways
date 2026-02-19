@@ -28,21 +28,22 @@ import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment } from './ty
 const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin');
   
+  // Use lazy initializer to prevent state overwrite from storage race conditions
   const [services, setServices] = useState<Service[]>(() => {
     const saved = localStorage.getItem('dr_services');
-    return saved ? JSON.parse(saved) : INITIAL_SERVICES;
+    return (saved && saved !== '[]') ? JSON.parse(saved) : INITIAL_SERVICES;
   });
 
   const [shipments, setShipments] = useState<Shipment[]>(() => {
     const saved = localStorage.getItem('dr_shipments');
-    return saved ? JSON.parse(saved) : [
+    return (saved && saved !== '[]') ? JSON.parse(saved) : [
       { id: '1', trackingNumber: 'DR-2025-001', sender: 'Delhi Hardware Mart', receiver: 'Faridabad Hub', origin: 'Faridabad, HR', destination: 'Jaipur, RJ', currentLocation: 'Jaipur Terminal', status: 'in-transit', lastUpdate: new Date().toLocaleString(), estimatedDelivery: '28 Feb, 2025', description: 'Consignment in transit between hubs.' }
     ];
   });
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>(() => {
     const saved = localStorage.getItem('dr_testimonials');
-    return saved ? JSON.parse(saved) : INITIAL_TESTIMONIALS;
+    return (saved && saved !== '[]') ? JSON.parse(saved) : INITIAL_TESTIMONIALS;
   });
 
   const [assets, setAssets] = useState<SiteAssets>(() => {
@@ -83,6 +84,7 @@ const App: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
+  // Save to storage only when data actually changes
   useEffect(() => { localStorage.setItem('dr_services', JSON.stringify(services)); }, [services]);
   useEffect(() => { localStorage.setItem('dr_testimonials', JSON.stringify(testimonials)); }, [testimonials]);
   useEffect(() => { localStorage.setItem('dr_shipments', JSON.stringify(shipments)); }, [shipments]);
