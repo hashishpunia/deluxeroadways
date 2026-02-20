@@ -5,7 +5,7 @@ import {
   Truck, Users, Plus, Edit, Image as ImageIcon, X, Save, 
   Upload, Settings, MapPin, Package, Navigation, ArrowRight, 
   AlertCircle, RefreshCw, Facebook, Twitter, Linkedin, Instagram, Link,
-  Eye, EyeOff, CheckCircle, Smartphone, Calendar
+  Eye, EyeOff, CheckCircle, Smartphone, Calendar, Star
 } from 'lucide-react';
 import { Service, Testimonial, SiteAssets, CompanyDetails, Shipment, ShipmentStatus, Inquiry } from '../types.ts';
 
@@ -43,9 +43,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'inquiries' | 'services' | 'testimonials' | 'assets' | 'settings' | 'shipments'>('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [editingShipment, setEditingShipment] = useState<Shipment | null>(null);
+  const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +90,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
     const updated = isNew ? [...services, editingService] : services.map(s => s.id === editingService.id ? editingService : s);
     setServices(updated);
     setEditingService(null);
+  };
+
+  const handleSaveTestimonial = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTestimonial) return;
+    const isNew = !testimonials.find(t => t.id === editingTestimonial.id);
+    const updated = isNew ? [...testimonials, editingTestimonial] : testimonials.map(t => t.id === editingTestimonial.id ? editingTestimonial : t);
+    setTestimonials(updated);
+    setEditingTestimonial(null);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (base64: string) => void) => {
@@ -149,6 +160,57 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row font-sans relative overflow-hidden">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between sticky top-0 z-[100]">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-slate-950 rounded-lg flex items-center justify-center text-amber-500">
+            <Package size={16} />
+          </div>
+          <span className="text-sm font-black uppercase text-slate-950">Deluxe Ops</span>
+        </div>
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-slate-950"
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Settings size={24} />}
+        </button>
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[90] flex flex-col p-8 pt-24 animate-in fade-in slide-in-from-top duration-300">
+          <nav className="space-y-4 flex-1">
+            {[
+              { id: 'dashboard', icon: LayoutDashboard, label: 'Analytics' },
+              { id: 'inquiries', icon: Inbox, label: 'Inquiry Inbox', count: inquiries.filter(i => i.status === 'new').length },
+              { id: 'shipments', icon: MapPin, label: 'Consignment Hub' },
+              { id: 'services', icon: Truck, label: 'Fleet Management' },
+              { id: 'testimonials', icon: Users, label: 'Client Feedback', count: testimonials.filter(t => !t.approved).length },
+              { id: 'assets', icon: ImageIcon, label: 'Visual Assets' },
+              { id: 'settings', icon: Settings, label: 'Global Settings' }
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id as any);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between p-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === item.id ? 'bg-amber-500 text-slate-950' : 'text-white/60 hover:text-white'}`}
+              >
+                <div className="flex items-center gap-4">
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                </div>
+                {item.count ? <span className="bg-white text-slate-950 px-2 py-0.5 rounded-lg text-[9px] font-black">{item.count}</span> : null}
+              </button>
+            ))}
+          </nav>
+          <button onClick={onClose} className="w-full flex items-center justify-center gap-4 text-white/40 font-black text-xs uppercase hover:text-red-500 py-8 border-t border-white/10">
+            <LogOut size={20} /> <span>Sign Out</span>
+          </button>
+        </div>
+      )}
+
       <aside className="hidden lg:flex w-72 bg-white border-r border-slate-200 flex-col shrink-0 sticky top-0 h-screen z-50 shadow-sm">
         <div className="p-8 flex flex-col h-full">
           <div className="flex items-center gap-3 mb-12">
@@ -197,6 +259,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
           {activeTab === 'services' && (
             <button onClick={() => setEditingService({ id: Date.now().toString(), title: '', description: '', icon: 'truck', image: '' })} className="btn-primary gap-3 shadow-xl"><Plus size={20} /> Add New Service</button>
+          )}
+          {activeTab === 'testimonials' && (
+            <button onClick={() => setEditingTestimonial({ id: Date.now().toString(), name: '', company: '', role: 'Client', quote: '', rating: 5, approved: true })} className="btn-primary gap-3 shadow-xl"><Plus size={20} /> Add Testimonial</button>
           )}
         </header>
 
@@ -324,37 +389,47 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
         )}
 
         {activeTab === 'testimonials' && (
-          <div className="space-y-12 animate-in fade-in">
-            {testimonials.filter(t => !t.approved).length > 0 && (
-              <div className="space-y-6">
-                <h4 className="text-xs font-black uppercase tracking-[0.3em] text-amber-500">Verification Pending</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {testimonials.filter(t => !t.approved).map(t => (
-                    <div key={t.id} className="bg-amber-50/50 p-6 rounded-[32px] border border-amber-100 relative">
-                      <p className="italic text-slate-700 mb-6 text-sm">"{t.quote}"</p>
-                      <div className="font-bold text-slate-900">{t.name}</div>
-                      <button onClick={() => toggleTestimonialStatus(t.id)} className="mt-4 w-full bg-slate-950 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
-                        <Eye size={14} /> Make Public
-                      </button>
-                    </div>
-                  ))}
+          <div className="space-y-8 animate-in fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+              {testimonials.length === 0 ? (
+                <div className="col-span-full py-20 text-center text-slate-400 font-bold italic bg-white rounded-[40px] border border-dashed border-slate-200">
+                  No testimonials found. Click "Add Testimonial" to create one.
                 </div>
-              </div>
-            )}
-            <div className="space-y-6">
-              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Live Testimonials</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {testimonials.filter(t => t.approved).map(t => (
-                  <div key={t.id} className="bg-white p-6 rounded-[32px] border border-slate-200 group relative">
-                    <p className="italic text-slate-700 mb-6 text-sm">"{t.quote}"</p>
-                    <div className="font-bold text-slate-900">{t.name}</div>
-                    <div className="mt-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => toggleTestimonialStatus(t.id)} className="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"><EyeOff size={14} /> Make Private</button>
-                      <button onClick={() => setTestimonials(testimonials.filter(it => it.id !== t.id))} className="p-3 bg-red-50 text-red-500 rounded-xl"><Trash2 size={16} /></button>
+              ) : (
+                testimonials.map(t => (
+                  <div key={t.id} className={`bg-white p-8 rounded-[40px] border transition-all group relative flex flex-col ${t.approved ? 'border-slate-200' : 'border-amber-200 bg-amber-50/30'}`}>
+                    <div className="flex justify-between items-start mb-6">
+                      <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${t.approved ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
+                        {t.approved ? 'Live on Site' : 'Pending Review'}
+                      </div>
+                      <div className="flex gap-1">
+                        {[...Array(t.rating)].map((_, i) => (
+                          <Star key={i} size={10} className="fill-amber-400 text-amber-400" />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <p className="italic text-slate-700 mb-8 text-sm leading-relaxed flex-1">"{t.quote}"</p>
+                    
+                    <div className="mt-auto">
+                      <div className="font-black text-slate-950 text-lg leading-tight">{t.name}</div>
+                      <div className="text-[10px] text-slate-400 font-black uppercase mt-1 tracking-widest">{t.company}</div>
+                      
+                      <div className="mt-8 flex gap-3 pt-6 border-t border-slate-50">
+                        <button onClick={() => setEditingTestimonial(t)} className="flex-1 bg-slate-50 text-slate-900 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors">
+                          <Edit size={14} /> Edit
+                        </button>
+                        <button onClick={() => toggleTestimonialStatus(t.id)} className={`p-3 rounded-xl transition-colors ${t.approved ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-amber-500 text-slate-950 hover:bg-amber-600'}`}>
+                          {t.approved ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                        <button onClick={() => setTestimonials(testimonials.filter(it => it.id !== t.id))} className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -460,7 +535,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest">Fleet Photo</label>
                   <div className="flex gap-4 items-center">
-                    {editingService.image && <img src={editingService.image} className="w-20 h-20 rounded-xl object-cover" />}
+                    {editingService.image && (
+                      <div className="relative group">
+                        <img src={editingService.image} className="w-20 h-20 rounded-xl object-cover" />
+                        <button 
+                          onClick={() => setEditingService({...editingService, image: ''})}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
                     <label className="flex-1 bg-slate-100 border-2 border-dashed border-slate-200 py-6 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-200 transition-all">
                       <ImageIcon className="text-slate-400 mb-2" />
                       <span className="text-[10px] font-black uppercase text-slate-500">Upload Image File</span>
@@ -469,6 +554,47 @@ const AdminPanel: React.FC<AdminPanelProps> = ({
                   </div>
                 </div>
                 <button onClick={handleSaveService} className="w-full bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest">Save Service</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingTestimonial && (
+          <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[500] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in">
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-2xl font-black text-slate-950">Testimonial Editor</h3>
+                <button onClick={() => setEditingTestimonial(null)}><X size={32} /></button>
+              </div>
+              <div className="p-10 space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest">Client Name</label>
+                    <input value={editingTestimonial.name} onChange={e => setEditingTestimonial({...editingTestimonial, name: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest">Company</label>
+                    <input value={editingTestimonial.company} onChange={e => setEditingTestimonial({...editingTestimonial, company: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest">Testimonial Quote</label>
+                  <textarea rows={4} value={editingTestimonial.quote} onChange={e => setEditingTestimonial({...editingTestimonial, quote: e.target.value})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest">Rating (1-5)</label>
+                    <input type="number" min="1" max="5" value={editingTestimonial.rating} onChange={e => setEditingTestimonial({...editingTestimonial, rating: parseInt(e.target.value) || 5})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest">Status</label>
+                    <select value={editingTestimonial.approved ? 'true' : 'false'} onChange={e => setEditingTestimonial({...editingTestimonial, approved: e.target.value === 'true'})} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black uppercase text-[10px] tracking-widest">
+                      <option value="true">Approved (Live)</option>
+                      <option value="false">Pending Review</option>
+                    </select>
+                  </div>
+                </div>
+                <button onClick={handleSaveTestimonial} className="w-full bg-slate-950 text-white py-5 rounded-2xl font-black uppercase tracking-widest">Save Testimonial</button>
               </div>
             </div>
           </div>
